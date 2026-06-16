@@ -1,0 +1,6 @@
+@OrbitVision.Api_HostAddress = http://localhost:5258
+
+GET {{OrbitVision.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
