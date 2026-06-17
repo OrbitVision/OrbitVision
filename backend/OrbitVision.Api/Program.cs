@@ -23,19 +23,17 @@ builder.Services.AddScoped<OrbitVision.API.Services.SatelliteService>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.MapOpenApi();
     app.MapScalarApiReference(options => 
     {
         options.Authentication = null; 
     });
-}
+//}
 
 app.UseHttpsRedirection();
-
 app.MapControllers();
-
 app.Run();
 
 
