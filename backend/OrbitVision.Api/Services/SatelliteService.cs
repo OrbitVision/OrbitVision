@@ -1,4 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using SGPdotNET.CoordinateSystem; // Contains EciCoordinate / GeodeticCoordinate
+using SGPdotNET.Propagation;      // Matches your docs: Sgp4, FindPosition
+using SGPdotNET.TLE;              // Contains Tle
+
 namespace OrbitVision.API.Services;
+
+public class TleEntry
+{
+    public string Name { get; set; } = "";
+    public string Line1 { get; set; } = "";
+    public string Line2 { get; set; } = "";
+}
 
 public class SatelliteService
 {
@@ -7,17 +23,62 @@ public class SatelliteService
     {
         _httpProvider = httpClient;
     }
-    public async Task<string> GetSatelliteData()
+
+    public async Task<TleEntry[]> GetSatelliteData()
     {
         try
         {
             var url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=STATIONS&FORMAT=TLE";
-            return await _httpProvider.GetStringAsync(url);
+            string rawData = await _httpProvider.GetStringAsync(url);
+
+            string[] lines = rawData.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(line => line.TrimEnd())
+                                    .ToArray();
+
+            var tleList = new List<TleEntry>();
+
+            for (int i = 0; i <= lines.Length - 3; i += 3)
+            {
+                tleList.Add(new TleEntry
+                {
+                    Name = lines[i],
+                    Line1 = lines[i + 1],
+                    Line2 = lines[i + 2]
+                });
+            }
+
+            var tleArray = tleList.ToArray();
+            
+            if (tleArray.Length > 0)
+            {
+                var tle = new Tle(tleArray[0].Name, tleArray[0].Line1, tleArray[0].Line2);
+                var t = new Sgp4(tle);
+                
+                // 1. Set the target evaluation time
+                DateTime targetTime = DateTime.UtcNow;
+
+                // 2. Use FindPosition(DateTime) as shown in your documentation
+                EciCoordinate eci = t.FindPosition(targetTime);
+
+                // 3. Convert the ECI space vectors to Ground coordinates
+                GeodeticCoordinate geo = eci.ToGeodetic();
+
+                // 4. Extract the properties
+                double latitude = geo.Latitude.Degrees;
+                double longitude = geo.Longitude.Degrees;
+                double altitude = geo.Altitude; // In kilometers
+
+                Console.WriteLine($"Satellite: {tleArray[0].Name}");
+                Console.WriteLine($"Latitude:  {latitude:F4}°");
+                Console.WriteLine($"Longitude: {longitude:F4}°");
+                Console.WriteLine($"Altitude:  {altitude:F2} km");
+            }
+
+            return tleArray;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return ex.Message;
+            return Array.Empty<TleEntry>();
         }
     }
 }
-

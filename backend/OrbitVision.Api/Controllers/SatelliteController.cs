@@ -13,7 +13,7 @@ public class SattelliteControler : ControllerBase
 
 
     [HttpGet]
-    public async Task<string> GetData()
+    public async Task<TleEntry[]> GetData()
     {
         return await _satelliteService.GetSatelliteData();
     }
