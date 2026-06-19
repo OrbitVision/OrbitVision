@@ -59,7 +59,6 @@ public class SatelliteService
                 EciCoordinate eci = t.FindPosition(targetTime);
                 
 
-
                 GeodeticCoordinate geo = eci.ToGeodetic();
 
      
