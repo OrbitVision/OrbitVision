@@ -54,19 +54,16 @@ public class SatelliteService
                 var tle = new Tle(tleArray[0].Name, tleArray[0].Line1, tleArray[0].Line2);
                 var t = new Sgp4(tle);
                 
-                // 1. Set the target evaluation time
                 DateTime targetTime = DateTime.UtcNow;
 
-                // 2. Use FindPosition(DateTime) as shown in your documentation
                 EciCoordinate eci = t.FindPosition(targetTime);
 
-                // 3. Convert the ECI space vectors to Ground coordinates
                 GeodeticCoordinate geo = eci.ToGeodetic();
 
-                // 4. Extract the properties
+     
                 double latitude = geo.Latitude.Degrees;
                 double longitude = geo.Longitude.Degrees;
-                double altitude = geo.Altitude; // In kilometers
+                double altitude = geo.Altitude; 
 
                 Console.WriteLine($"Satellite: {tleArray[0].Name}");
                 Console.WriteLine($"Latitude:  {latitude:F4}°");
