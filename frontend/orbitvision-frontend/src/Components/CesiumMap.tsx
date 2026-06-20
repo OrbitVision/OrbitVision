@@ -1,10 +1,17 @@
 import { useEffect, useRef } from 'react';
 import { Viewer, Color } from 'cesium';
-
+import SearchBar from './SearchBar';
 
 export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Viewer | null>(null);
+
+    const handleSearchSatellite = (satelliteName: string) => {
+        if (!viewerRef.current) return;
+
+        console.log("Test");
+
+    };
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -75,5 +82,12 @@ export default function CesiumMap() {
         };
     }, []);
 
-    return <div ref={containerRef} className="w-full h-full" />;
-}
+    return (
+        <div className="relative w-full h-full">
+            <div className="absolute top-4 left-4 z-10">
+                <SearchBar onSearch={handleSearchSatellite} />
+            </div>
+            <div ref={containerRef} className="w-full h-full" />
+        </div>
+    )
+};
