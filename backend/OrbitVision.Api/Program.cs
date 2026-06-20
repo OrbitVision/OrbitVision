@@ -17,11 +17,22 @@ builder.Services.AddScoped<OrbitVision.API.Services.SatelliteService>();
 
 
 
-
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.WithOrigins("http://localhost:5173").AllowCredentials()
+               .AllowAnyMethod()
+               .AllowAnyHeader()
+               .AllowCredentials();
+    });
+});
 
 
 
 var app = builder.Build();
+
+app.UseCors();
 
 //if (app.Environment.IsDevelopment())
 //{
