@@ -1,6 +1,6 @@
 import './App.css'
 import CesiumMap from './Components/CesiumMap'
-import SearchBar from './Components/searchBar'
+import SearchBar from './Components/SearchBar'
 
 function App() {
 
