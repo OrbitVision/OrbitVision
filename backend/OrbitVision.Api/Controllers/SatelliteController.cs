@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OrbitVision.API.Services;
+using SGPdotNET.CoordinateSystem;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -13,7 +14,7 @@ public class SattelliteControler : ControllerBase
 
 
     [HttpGet]
-    public async Task<TleEntry[]> GetData()
+    public async Task<SatelliteRouteResponse?> GetData()
     {
         return await _satelliteService.GetSatelliteData();
     }

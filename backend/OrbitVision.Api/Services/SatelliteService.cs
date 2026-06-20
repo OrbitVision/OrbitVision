@@ -24,7 +24,7 @@ public class SatelliteService
         _httpProvider = httpClient;
     }
 
-    public async Task<TleEntry[]> GetSatelliteData()
+    public async Task<SatelliteRouteResponse?> GetSatelliteData()
     {
         try
         {
@@ -51,32 +51,41 @@ public class SatelliteService
             
             if (tleArray.Length > 0)
             {
-                var tle = new Tle(tleArray[0].Name, tleArray[0].Line1, tleArray[0].Line2);
+               var tle = new Tle(tleArray[0].Name, tleArray[0].Line1, tleArray[0].Line2);
                 var t = new Sgp4(tle);
-                
-                DateTime targetTime = DateTime.UtcNow;
 
-                EciCoordinate eci = t.FindPosition(targetTime);
-                
+                var pointsList = new List<SatellitePoint>();
+                DateTime startTime = DateTime.UtcNow;
 
-                GeodeticCoordinate geo = eci.ToGeodetic();
+                // Generowanie punktów na najbliższe 10 minut co 10 sekund
+                for (int secondsOffset = 0; secondsOffset <= 600; secondsOffset += 10)
+                {
+                    DateTime targetTime = startTime.AddSeconds(secondsOffset);
+                    EciCoordinate eci = t.FindPosition(targetTime);          
+                    GeodeticCoordinate geo = eci.ToGeodetic();
+                    
+                    pointsList.Add(new SatellitePoint(
+                        geo.Latitude.Degrees,
+                        geo.Longitude.Degrees,
+                        geo.Altitude,
+                        targetTime
+                    ));
+                }
 
-     
-                double latitude = geo.Latitude.Degrees;
-                double longitude = geo.Longitude.Degrees;
-                double altitude = geo.Altitude; 
+                // Tworzymy obiekt końcowy zawierający nazwę oraz listę współrzędnych
+                var response = new SatelliteRouteResponse(tleArray[0].Name, pointsList);
 
-                Console.WriteLine($"Satellite: {tleArray[0].Name}");
-                Console.WriteLine($"Latitude:  {latitude:F4}°");
-                Console.WriteLine($"Longitude: {longitude:F4}°");
-                Console.WriteLine($"Altitude:  {altitude:F2} km");
+                return response;
             }
 
-            return tleArray;
+            return null;
         }
         catch (Exception)
         {
-            return Array.Empty<TleEntry>();
+            return null;
         }
     }
 }
+
+
+

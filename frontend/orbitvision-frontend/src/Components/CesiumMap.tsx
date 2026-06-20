@@ -75,7 +75,5 @@ export default function CesiumMap() {
         };
     }, []);
 
-    return (<div>
-     <div ref={containerRef} className="w-full h-full" />    
-    </div>); 
+    return <div ref={containerRef} className="w-full h-full" />;
 }
