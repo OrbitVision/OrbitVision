@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Viewer, Color } from 'cesium';
-import SearchBar from './searchBar';
+
 
 export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
