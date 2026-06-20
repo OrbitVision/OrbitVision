@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as Cesium from "cesium";
+import SearchBar from "./SearchBar";
 
 export default function CesiumMap() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -115,6 +116,13 @@ const addMovingSatellite = () => {
     viewer.flyTo(satellite);
   };
 
+  const handleSearchSatellite = () => {
+        if (!viewerRef.current) return;
+
+        console.log("Test");
+
+    };
+
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -186,5 +194,12 @@ const addMovingSatellite = () => {
     };
   }, []);
 
-  return <div ref={containerRef} className="h-full w-full" />;
+  return (
+        <div className="relative w-full h-full">
+            <div className="absolute top-4 left-4 z-10">
+                <SearchBar onSearch={handleSearchSatellite} />
+            </div>
+            <div ref={containerRef} className="w-full h-full" />
+        </div>
+    )
 }
