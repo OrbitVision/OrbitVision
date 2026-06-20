@@ -1,93 +1,190 @@
-import { useEffect, useRef } from 'react';
-import { Viewer, Color } from 'cesium';
-import SearchBar from './SearchBar';
+import { useEffect, useRef } from "react";
+import * as Cesium from "cesium";
 
 export default function CesiumMap() {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const viewerRef = useRef<Viewer | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const viewerRef = useRef<Cesium.Viewer | null>(null);
 
-    const handleSearchSatellite = () => {
-        if (!viewerRef.current) return;
+const addMovingSatellite = () => {
+  const viewer = viewerRef.current;
 
-        console.log("Test");
+  if (!viewer) return;
 
-    };
+  const start = Cesium.JulianDate.now();
+  const stop = Cesium.JulianDate.addSeconds(
+    start,
+    360,
+    new Cesium.JulianDate()
+  );
 
-    useEffect(() => {
-        if (!containerRef.current) return;
+  const position = new Cesium.SampledPositionProperty();
 
-        const viewer = new Viewer(containerRef.current, {
-            animation: false,
-            timeline: false,
-            baseLayerPicker: false,
-            infoBox: false,
-            selectionIndicator: false,
-            geocoder: false,
-            homeButton: false,
-            sceneModePicker: false,
-            fullscreenButton: false,
-            creditContainer: document.createElement('div'),
+  // 360 punktów trajektorii, co 1 sekunda
+  for (let i = 0; i <= 360; i++) {
+    const time = Cesium.JulianDate.addSeconds(
+      start,
+      i,
+      new Cesium.JulianDate()
+    );
 
-            requestRenderMode: true,
-            maximumRenderTimeChange: Infinity,
+    // Testowa "orbita"
+    const longitude = 19.94 + i * 2;
+    const latitude = 20 * Math.sin(i * 0.08);
+    const height = 400000;
 
-            contextOptions: {
-                webgl: {
-                    alpha: false,
-                    preserveDrawingBuffer: false,
-                    failIfMajorPerformanceCaveat: false,
-                    powerPreference: 'high-performance',
-                }
-            },
-        });
+    const satellitePosition = Cesium.Cartesian3.fromDegrees(
+      longitude,
+      latitude,
+      height
+    );
 
-        const scene = viewer.scene;
+    position.addSample(time, satellitePosition);
+  }
 
-        scene.camera.moveEnd.addEventListener(() => {
-            const height = scene.camera.positionCartographic.height;
-            if (height > 500000) {
-                scene.globe.maximumScreenSpaceError = 5;
-            } else {
-                scene.globe.maximumScreenSpaceError = 2;
-            }
-        });
+  const satellite = viewer.entities.add({
+    name: "SAT-1",
+    position: position,
 
-        scene.skyBox = undefined;
-        scene.skyAtmosphere = undefined;
-        scene.sun = undefined;
-        scene.moon = undefined;
-        scene.backgroundColor = Color.BLACK;
+    point: {
+      pixelSize: 10,
+      color: Cesium.Color.RED,
+      outlineColor: Cesium.Color.WHITE,
+      outlineWidth: 2,
+    },
 
-        scene.globe.enableLighting = false;
-        scene.fog.enabled = false;
+    label: {
+      text: "SAT-1",
+      font: "14px sans-serif",
+      pixelOffset: new Cesium.Cartesian2(0, -25),
+      fillColor: Cesium.Color.WHITE,
+    },
 
-        scene.globe.maximumScreenSpaceError = 3;
+    // Opcjonalne: kierunek obiektu zgodny z ruchem
+    orientation: new Cesium.VelocityOrientationProperty(position),
 
+    // Widoczna trajektoria
+    path: {
+      show: true,
+      leadTime: 0,
+      trailTime: 180,
+      width: 2,
+      material: Cesium.Color.CYAN,
+    },
+  });
 
-        scene.shadowMap.enabled = false;
+  viewer.clock.startTime = start.clone();
+  viewer.clock.stopTime = stop.clone();
+  viewer.clock.currentTime = start.clone();
 
+  viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP;
+  viewer.clock.multiplier = 10;
+  viewer.clock.shouldAnimate = true;
 
-        scene.screenSpaceCameraController.enableCollisionDetection = false;
-
-
-        viewer.resolutionScale = Math.min(window.devicePixelRatio, 1.5);
-
-        viewerRef.current = viewer;
-
-        return () => {
-            if (viewerRef.current && !viewerRef.current.isDestroyed()) {
-                viewerRef.current.destroy();
-                viewerRef.current = null;
-            }
-        };
-    }, []);
-
-    return (
-        <div className="relative w-full h-full">
-            <div className="absolute top-4 left-4 z-10">
-                <SearchBar onSearch={handleSearchSatellite} />
-            </div>
-            <div ref={containerRef} className="w-full h-full" />
-        </div>
-    )
+  viewer.trackedEntity = satellite;
 };
+
+  const handle = () => {
+    const viewer = viewerRef.current;
+
+    if (!viewer) return;
+
+    const satellite = viewer.entities.add({
+      name: "Testowa satelita",
+
+      position: Cesium.Cartesian3.fromDegrees(
+        19.94,
+        50.06,
+        400000
+      ),
+
+      point: {
+        pixelSize: 12,
+        color: Cesium.Color.RED,
+        outlineColor: Cesium.Color.WHITE,
+        outlineWidth: 2,
+      },
+
+      label: {
+        text: "SAT-1",
+        font: "14px sans-serif",
+        pixelOffset: new Cesium.Cartesian2(0, -25),
+        fillColor: Cesium.Color.WHITE,
+      },
+    });
+
+    viewer.flyTo(satellite);
+  };
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const viewer = new Cesium.Viewer(containerRef.current, {
+      animation: false,
+      timeline: false,
+      baseLayerPicker: false,
+      infoBox: false,
+      selectionIndicator: false,
+      geocoder: false,
+      homeButton: false,
+      sceneModePicker: false,
+      fullscreenButton: false,
+      creditContainer: document.createElement("div"),
+
+      requestRenderMode: true,
+      
+
+      contextOptions: {
+        webgl: {
+          alpha: false,
+          preserveDrawingBuffer: false,
+          failIfMajorPerformanceCaveat: false,
+          powerPreference: "high-performance",
+        },
+      },
+    });
+
+    const scene = viewer.scene;
+
+    scene.camera.moveEnd.addEventListener(() => {
+      const height = scene.camera.positionCartographic.height;
+
+      if (height > 500000) {
+        scene.globe.maximumScreenSpaceError = 5;
+      } else {
+        scene.globe.maximumScreenSpaceError = 2;
+      }
+    });
+
+    scene.skyBox = undefined;
+    scene.skyAtmosphere = undefined;
+    scene.sun = undefined;
+    scene.moon = undefined;
+    scene.backgroundColor = Cesium.Color.BLACK;
+
+    scene.globe.enableLighting = false;
+    scene.fog.enabled = false;
+    scene.globe.maximumScreenSpaceError = 3;
+    scene.shadowMap.enabled = false;
+
+    scene.screenSpaceCameraController.enableCollisionDetection = false;
+
+    viewer.resolutionScale = Math.min(window.devicePixelRatio, 1.5);
+
+    viewerRef.current = viewer;
+
+    addMovingSatellite();
+
+    // Tymczasowo dodaj satelitę od razu po uruchomieniu mapy.
+    handle();
+
+    return () => {
+      if (!viewer.isDestroyed()) {
+        viewer.destroy();
+      }
+
+      viewerRef.current = null;
+    };
+  }, []);
+
+  return <div ref={containerRef} className="h-full w-full" />;
+}
