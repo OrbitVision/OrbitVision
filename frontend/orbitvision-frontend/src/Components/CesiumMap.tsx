@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Viewer, Color } from 'cesium';
 
+
 export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Viewer | null>(null);
