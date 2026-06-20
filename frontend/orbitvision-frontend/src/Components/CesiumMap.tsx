@@ -6,7 +6,7 @@ export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Viewer | null>(null);
 
-    const handleSearchSatellite = (satelliteName: string) => {
+    const handleSearchSatellite = () => {
         if (!viewerRef.current) return;
 
         console.log("Test");
