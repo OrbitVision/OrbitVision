@@ -3,6 +3,7 @@ import { Viewer, Color } from 'cesium';
 //do wyjebania potem
 import { axiosGetData } from '../api/axios';
 
+
 export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Viewer | null>(null);
