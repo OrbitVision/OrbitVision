@@ -1,17 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { Viewer, Color } from 'cesium';
-//do wyjebania potem
-import { axiosGetData } from '../api/axios';
 
 export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Viewer | null>(null);
 
     useEffect(() => {
-        //do wyjebania potem
-        var data = axiosGetData();
-        console.log(data)
-
         if (!containerRef.current) return;
 
         const viewer = new Viewer(containerRef.current, {
@@ -80,8 +74,5 @@ export default function CesiumMap() {
         };
     }, []);
 
-    return (
-        <></>
-        // <div ref={containerRef} className="w-full h-full" />
-    );
+    return <div ref={containerRef} className="w-full h-full" />;
 }
