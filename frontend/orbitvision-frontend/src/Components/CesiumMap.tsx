@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Viewer, Color } from 'cesium';
+import SearchBar from './searchBar';
 
 export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -74,5 +75,7 @@ export default function CesiumMap() {
         };
     }, []);
 
-    return <div ref={containerRef} className="w-full h-full" />;
+    return (<div>
+     <div ref={containerRef} className="w-full h-full" />    
+    </div>); 
 }
