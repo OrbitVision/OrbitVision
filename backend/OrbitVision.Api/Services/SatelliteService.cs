@@ -49,18 +49,29 @@ public class SatelliteService
 
             var tleArray = tleList.ToArray();
             
+            
             if (tleArray.Length > 0)
             {
-               var tle = new Tle(tleArray[0].Name, tleArray[0].Line1, tleArray[0].Line2);
+                var tle = new Tle(tleArray[0].Name, tleArray[0].Line1, tleArray[0].Line2);
                 var t = new Sgp4(tle);
+
+                ///////////////////////
+                double meanMotion = tle.MeanMotionRevPerDay;
+                double period = 1440.0 / meanMotion;
+                double periodS = period * 60.0;
+                ///////////////////////
+
+                int totalPoints = 200;
+                double step = periodS / totalPoints;
 
                 var pointsList = new List<SatellitePoint>();
                 DateTime startTime = DateTime.UtcNow;
 
                 // Generowanie punktów na najbliższe 10 minut co 10 sekund
-                for (int secondsOffset = 0; secondsOffset <= 600; secondsOffset += 10)
+                for (int i = 0; i < totalPoints; i++)
                 {
-                    DateTime targetTime = startTime.AddSeconds(secondsOffset);
+                    double currentOf = i * step;
+                    DateTime targetTime = startTime.AddSeconds(currentOf);
                     EciCoordinate eci = t.FindPosition(targetTime);          
                     GeodeticCoordinate geo = eci.ToGeodetic();
                     
@@ -72,7 +83,6 @@ public class SatelliteService
                     ));
                 }
 
-                // Tworzymy obiekt końcowy zawierający nazwę oraz listę współrzędnych
                 var response = new SatelliteRouteResponse(tleArray[0].Name, pointsList);
 
                 return response;
