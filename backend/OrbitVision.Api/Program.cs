@@ -1,19 +1,20 @@
 using Scalar.AspNetCore;
 using Microsoft.AspNetCore.OpenApi;
+using OrbitVision.API.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
-builder.Services.AddHttpClient();
+//DB connection
+builder.Services.AddDbContext<AppDbContext>(
+    options => options.UseNpgsql(builder.Configuration.GetConnectionString("WebApiDatabase"))
+);
 
-// TODO - DBCONTEXT
-
-//////
-
-// Adding Controllers to main app flow
 builder.Services.AddControllers();
 builder.Services.AddScoped<OrbitVision.API.Services.SatelliteService>();
 
+builder.Services.AddHttpClient();
 
 
 
