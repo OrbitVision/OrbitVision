@@ -3,221 +3,231 @@ import * as Cesium from "cesium";
 import SearchBar from "./SearchBar";
 import { axiosGetData } from "../api/axios";
 
-interface pointSatelite
-{
-    Latitude: Number;
-    Longitude: Number;
-    AltitudeKilometers: Number;
-    Timestamp: string;
-}
-
-interface response{
-    point: pointSatelite[];
-
+interface SatellitePoint {
+    latitude: number;
+    longitude: number;
+    altitudeKilometers: number;
+    timestamp: string;
 }
 
 export default function CesiumMap() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const viewerRef = useRef<Cesium.Viewer | null>(null);
-  const [points, setPoints] = useState<response | null>(null)
+    const containerRef = useRef<HTMLDivElement>(null);
+    const viewerRef = useRef<Cesium.Viewer | null>(null);
+    const [points, setPoints] = useState<SatellitePoint[]>([]);
+    
 
-
-
+    
 
     const handleSearchSatellite = async () => {
         if (!viewerRef.current) return;
 
-        var data = await axiosGetData();
+        try {
+            const res = await axiosGetData();
+            console.log(res);
 
-        setPoints(data.data);
+            if (res && res.data && res.data.points) {
+                setPoints(res.data.points);
+                console.log("Chyba git:", res.data.points);
 
-        console.log(points);
+                console.log("Chuj");
+                dodajSateliteZTrajektoria(viewerRef.current, points, "ISS");
+                console.log(viewerRef.current.entities.values);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
     };
 
+    
+    function dodajSateliteZTrajektoria(
+            viewer: Cesium.Viewer,
+            points: {
+              latitude: number;
+              longitude: number;
+              altitudeKilometers: number;
+              timestamp: string;
+            }[],
+            nazwa = "Satelita"
+        ) {
+            if (points.length === 0) {
+            console.error("Brak punktów");
+            return;
+        }
 
-const addMovingSatellite = () => {
-  const viewer = viewerRef.current;
+        const positionProperty = new Cesium.SampledPositionProperty();
 
-  if (!viewer) return;
+        points.forEach((point) => {
+        const time = Cesium.JulianDate.fromIso8601(point.timestamp);
 
-  const start = Cesium.JulianDate.now();
-  const stop = Cesium.JulianDate.addSeconds(
-    start,
-    360,
-    new Cesium.JulianDate()
-  );
+        const position = Cesium.Cartesian3.fromDegrees(
+            point.longitude,
+            point.latitude,
+            point.altitudeKilometers * 1000
+        );
 
-  const position = new Cesium.SampledPositionProperty();
+        positionProperty.addSample(time, position);
+        });
 
-  // 360 punktów trajektorii, co 1 sekunda
-  for (let i = 0; i <= 360; i++) {
-    const time = Cesium.JulianDate.addSeconds(
-      start,
-      i,
-      new Cesium.JulianDate()
-    );
+        const startTime = Cesium.JulianDate.fromIso8601(points[0].timestamp);
 
-    // Testowa "orbita"
-    const longitude = 19.94 + i * 2;
-    const latitude = 20 * Math.sin(i * 0.08);
-    const height = 400000;
+        const stopTime = Cesium.JulianDate.fromIso8601(
+            points[points.length - 1].timestamp
+        );
 
-    const satellitePosition = Cesium.Cartesian3.fromDegrees(
-      longitude,
-      latitude,
-      height
-    );
+        const satelliteEntity = viewer.entities.add({
+            name: nazwa,
 
-    position.addSample(time, satellitePosition);
-  }
+            // Bardzo ważne — określa kiedy encja ma istnieć
+            availability: new Cesium.TimeIntervalCollection([
+                new Cesium.TimeInterval({
+                    start: startTime,
+                    stop: stopTime
+                })
+            ]),
 
-  const satellite = viewer.entities.add({
-    name: "SAT-1",
-    position: position,
+            position: positionProperty,
 
-    point: {
-      pixelSize: 10,
-      color: Cesium.Color.RED,
-      outlineColor: Cesium.Color.WHITE,
-      outlineWidth: 2,
-    },
+            point: {
+                pixelSize: 14,
+                color: Cesium.Color.YELLOW,
+                outlineColor: Cesium.Color.BLACK,
+                outlineWidth: 2
+            },
 
-    label: {
-      text: "SAT-1",
-      font: "14px sans-serif",
-      pixelOffset: new Cesium.Cartesian2(0, -25),
-      fillColor: Cesium.Color.WHITE,
-    },
+            path: {
+                show: true,
+                width: 3,
+                material: Cesium.Color.CYAN,
+                leadTime: 3600,
+                trailTime: 3600
+            }
+        });
 
-    // Opcjonalne: kierunek obiektu zgodny z ruchem
-    orientation: new Cesium.VelocityOrientationProperty(position),
+        viewer.clock.startTime = startTime.clone();
+        viewer.clock.stopTime = stopTime.clone();
+        viewer.clock.currentTime = startTime.clone();
 
-    // Widoczna trajektoria
-    path: {
-      show: true,
-      leadTime: 0,
-      trailTime: 180,
-      width: 2,
-      material: Cesium.Color.CYAN,
-    },
-  });
+        viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP;
+        viewer.clock.multiplier = 20;
+        viewer.clock.shouldAnimate = true;
 
-  viewer.clock.startTime = start.clone();
-  viewer.clock.stopTime = stop.clone();
-  viewer.clock.currentTime = start.clone();
+        // Kamera leci do satelity
+        viewer.zoomTo(satelliteEntity);
 
-  viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP;
-  viewer.clock.multiplier = 10;
-  viewer.clock.shouldAnimate = true;
+        return satelliteEntity;
+    }
+       
 
-  viewer.trackedEntity = satellite;
-};
+    const handle = () => {
+        const viewer = viewerRef.current;
 
-  const handle = () => {
-    const viewer = viewerRef.current;
+        if (!viewer) return;
 
-    if (!viewer) return;
+        const satellite = viewer.entities.add({
+            name: "Testowa satelita",
 
-    const satellite = viewer.entities.add({
-      name: "Testowa satelita",
+            position: Cesium.Cartesian3.fromDegrees(
+                19.94,
+                50.06,
+                400000
+            ),
 
-      position: Cesium.Cartesian3.fromDegrees(
-        19.94,
-        50.06,
-        400000
-      ),
+            point: {
+                pixelSize: 12,
+                color: Cesium.Color.RED,
+                outlineColor: Cesium.Color.WHITE,
+                outlineWidth: 2,
+            },
 
-      point: {
-        pixelSize: 12,
-        color: Cesium.Color.RED,
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 2,
-      },
+            label: {
+                text: "SAT-1",
+                font: "14px sans-serif",
+                pixelOffset: new Cesium.Cartesian2(0, -25),
+                fillColor: Cesium.Color.WHITE,
+            },
+        });
 
-      label: {
-        text: "SAT-1",
-        font: "14px sans-serif",
-        pixelOffset: new Cesium.Cartesian2(0, -25),
-        fillColor: Cesium.Color.WHITE,
-      },
-    });
-
-    viewer.flyTo(satellite);
-  };
-
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const viewer = new Cesium.Viewer(containerRef.current, {
-      animation: false,
-      timeline: false,
-      baseLayerPicker: false,
-      infoBox: false,
-      selectionIndicator: false,
-      geocoder: false,
-      homeButton: false,
-      sceneModePicker: false,
-      fullscreenButton: false,
-      creditContainer: document.createElement("div"),
-
-      requestRenderMode: true,
-      
-
-      contextOptions: {
-        webgl: {
-          alpha: false,
-          preserveDrawingBuffer: false,
-          failIfMajorPerformanceCaveat: false,
-          powerPreference: "high-performance",
-        },
-      },
-    });
-
-    const scene = viewer.scene;
-
-    scene.camera.moveEnd.addEventListener(() => {
-      const height = scene.camera.positionCartographic.height;
-
-      if (height > 500000) {
-        scene.globe.maximumScreenSpaceError = 5;
-      } else {
-        scene.globe.maximumScreenSpaceError = 2;
-      }
-    });
-
-    scene.skyBox = undefined;
-    scene.skyAtmosphere = undefined;
-    scene.sun = undefined;
-    scene.moon = undefined;
-    scene.backgroundColor = Cesium.Color.BLACK;
-
-    scene.globe.enableLighting = false;
-    scene.fog.enabled = false;
-    scene.globe.maximumScreenSpaceError = 3;
-    scene.shadowMap.enabled = false;
-
-    scene.screenSpaceCameraController.enableCollisionDetection = false;
-
-    viewer.resolutionScale = Math.min(window.devicePixelRatio, 1.5);
-
-    viewerRef.current = viewer;
-
-    addMovingSatellite();
-
-    // Tymczasowo dodaj satelitę od razu po uruchomieniu mapy.
-    handle();
-
-    return () => {
-      if (!viewer.isDestroyed()) {
-        viewer.destroy();
-      }
-
-      viewerRef.current = null;
+        viewer.flyTo(satellite);
     };
-  }, []);
 
-  return (
+    
+
+    useEffect(() => {
+        if (points.length > 0) {
+            console.log("Punkty", points);
+        }
+    }, [points]);
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        const viewer = new Cesium.Viewer(containerRef.current, {
+            animation: false,
+            timeline: false,
+            baseLayerPicker: false,
+            infoBox: false,
+            selectionIndicator: false,
+            geocoder: false,
+            homeButton: false,
+            sceneModePicker: false,
+            fullscreenButton: false,
+            creditContainer: document.createElement("div"),
+
+            requestRenderMode: true,
+
+
+            contextOptions: {
+                webgl: {
+                    alpha: false,
+                    preserveDrawingBuffer: false,
+                    failIfMajorPerformanceCaveat: false,
+                    powerPreference: "high-performance",
+                },
+            },
+        });
+
+        const scene = viewer.scene;
+
+        scene.camera.moveEnd.addEventListener(() => {
+            const height = scene.camera.positionCartographic.height;
+
+            if (height > 500000) {
+                scene.globe.maximumScreenSpaceError = 5;
+            } else {
+                scene.globe.maximumScreenSpaceError = 2;
+            }
+        });
+
+        scene.skyBox = undefined;
+        scene.skyAtmosphere = undefined;
+        scene.sun = undefined;
+        scene.moon = undefined;
+        scene.backgroundColor = Cesium.Color.BLACK;
+
+        scene.globe.enableLighting = false;
+        scene.fog.enabled = false;
+        scene.globe.maximumScreenSpaceError = 3;
+        scene.shadowMap.enabled = false;
+
+        scene.screenSpaceCameraController.enableCollisionDetection = false;
+
+        viewer.resolutionScale = Math.min(window.devicePixelRatio, 1.5);
+
+        viewerRef.current = viewer;
+
+        // Tymczasowo dodaj satelitę od razu po uruchomieniu mapy.
+        handle();
+
+        return () => {
+            if (!viewer.isDestroyed()) {
+                viewer.destroy();
+            }
+
+            viewerRef.current = null;
+        };
+    }, []);
+
+    return (
         <div className="relative w-full h-full">
             <div className="absolute top-4 left-4 z-10">
                 <SearchBar onSearch={handleSearchSatellite} />
