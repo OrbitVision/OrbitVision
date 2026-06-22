@@ -122,41 +122,6 @@ export default function CesiumMap() {
         return satelliteEntity;
     }
        
-
-    const handle = () => {
-        const viewer = viewerRef.current;
-
-        if (!viewer) return;
-
-        const satellite = viewer.entities.add({
-            name: "Testowa satelita",
-
-            position: Cesium.Cartesian3.fromDegrees(
-                19.94,
-                50.06,
-                400000
-            ),
-
-            point: {
-                pixelSize: 12,
-                color: Cesium.Color.RED,
-                outlineColor: Cesium.Color.WHITE,
-                outlineWidth: 2,
-            },
-
-            label: {
-                text: "SAT-1",
-                font: "14px sans-serif",
-                pixelOffset: new Cesium.Cartesian2(0, -25),
-                fillColor: Cesium.Color.WHITE,
-            },
-        });
-
-        viewer.flyTo(satellite);
-    };
-
-    
-
     useEffect(() => {
         if (points.length > 0) {
             console.log("Punkty", points);
@@ -219,9 +184,6 @@ export default function CesiumMap() {
         viewer.resolutionScale = Math.min(window.devicePixelRatio, 1.5);
 
         viewerRef.current = viewer;
-
-        // Tymczasowo dodaj satelitę od razu po uruchomieniu mapy.
-        handle();
 
         return () => {
             if (!viewer.isDestroyed()) {
