@@ -3,6 +3,7 @@ import * as Cesium from "cesium";
 import SearchBar from "./SearchBar";
 import { axiosGetData } from "../api/axios";
 
+
 interface SatellitePoint {
     latitude: number;
     longitude: number;
@@ -15,9 +16,6 @@ export default function CesiumMap() {
     const viewerRef = useRef<Cesium.Viewer | null>(null);
     const [points, setPoints] = useState<SatellitePoint[]>([]);
     
-
-    
-
     const handleSearchSatellite = async () => {
         if (!viewerRef.current) return;
 
@@ -30,14 +28,13 @@ export default function CesiumMap() {
                 console.log("Chyba git:", res.data.points);
 
                 console.log("Chuj");
-                dodajSateliteZTrajektoria(viewerRef.current, points, "ISS");
+                dodajSateliteZTrajektoria(viewerRef.current, points, res.data.satelliteName);
                 console.log(viewerRef.current.entities.values);
             }
         } catch (error) {
             console.error("Error:", error);
         }
     };
-
     
     function dodajSateliteZTrajektoria(
             viewer: Cesium.Viewer,
@@ -74,6 +71,8 @@ export default function CesiumMap() {
             points[points.length - 1].timestamp
         );
 
+        const diffInTime = (new Date(points[points.length - 1].timestamp).getTime() - new Date(points[0].timestamp).getTime()) / 1000;
+
         const satelliteEntity = viewer.entities.add({
             name: nazwa,
 
@@ -98,8 +97,14 @@ export default function CesiumMap() {
                 show: true,
                 width: 3,
                 material: Cesium.Color.CYAN,
-                leadTime: 3600,
-                trailTime: 3600
+                leadTime: diffInTime,
+                trailTime: diffInTime
+            },
+            label: 
+            {
+                text: nazwa,
+                pixelOffset: new Cesium.Cartesian2(0, 20),
+                scaleByDistance: new Cesium.NearFarScalar(0.39, 0.39, 0.50, 0.50)
             }
         });
 
