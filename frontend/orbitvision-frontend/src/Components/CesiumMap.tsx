@@ -1,10 +1,39 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as Cesium from "cesium";
 import SearchBar from "./SearchBar";
+import { axiosGetData } from "../api/axios";
+
+interface pointSatelite
+{
+    Latitude: Number;
+    Longitude: Number;
+    AltitudeKilometers: Number;
+    Timestamp: string;
+}
+
+interface response{
+    point: pointSatelite[];
+
+}
 
 export default function CesiumMap() {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<Cesium.Viewer | null>(null);
+  const [points, setPoints] = useState<response | null>(null)
+
+
+
+
+    const handleSearchSatellite = async () => {
+        if (!viewerRef.current) return;
+
+        var data = await axiosGetData();
+
+        setPoints(data.data);
+
+        console.log(points);
+    };
+
 
 const addMovingSatellite = () => {
   const viewer = viewerRef.current;
@@ -116,12 +145,6 @@ const addMovingSatellite = () => {
     viewer.flyTo(satellite);
   };
 
-  const handleSearchSatellite = () => {
-        if (!viewerRef.current) return;
-
-        console.log("Test");
-
-    };
 
   useEffect(() => {
     if (!containerRef.current) return;
