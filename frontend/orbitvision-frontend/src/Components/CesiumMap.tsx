@@ -27,8 +27,7 @@ export default function CesiumMap() {
                 setPoints(res.data.points);
                 console.log("Chyba git:", res.data.points);
 
-                console.log("Chuj");
-                dodajSateliteZTrajektoria(viewerRef.current, points, res.data.satelliteName);
+                dodajSateliteZTrajektoria(viewerRef.current, res.data.points, res.data.satelliteName);
                 console.log(viewerRef.current.entities.values);
             }
         } catch (error) {
@@ -51,6 +50,7 @@ export default function CesiumMap() {
             return;
         }
 
+        console.log(viewer)
         const positionProperty = new Cesium.SampledPositionProperty();
 
         points.forEach((point) => {
@@ -65,7 +65,9 @@ export default function CesiumMap() {
         positionProperty.addSample(time, position);
         });
 
+
         const startTime = Cesium.JulianDate.fromIso8601(points[0].timestamp);
+        
 
         const stopTime = Cesium.JulianDate.fromIso8601(
             points[points.length - 1].timestamp
@@ -112,8 +114,8 @@ export default function CesiumMap() {
         viewer.clock.stopTime = stopTime.clone();
         viewer.clock.currentTime = startTime.clone();
 
-        viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP;
-        viewer.clock.multiplier = 20;
+        viewer.clock.clockRange = Cesium.ClockRange.UNBOUNDED;
+        viewer.clock.multiplier = 1;
         viewer.clock.shouldAnimate = true;
 
         // Kamera leci do satelity
@@ -184,6 +186,7 @@ export default function CesiumMap() {
         viewer.resolutionScale = Math.min(window.devicePixelRatio, 1.5);
 
         viewerRef.current = viewer;
+
 
         return () => {
             if (!viewer.isDestroyed()) {
