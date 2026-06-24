@@ -22,7 +22,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
-        builder.WithOrigins("http://localhost:5173").AllowCredentials()
+        builder.WithOrigins("http://localhost:5173", "https://orbitvision.vercel.app/")
                .AllowAnyMethod()
                .AllowAnyHeader()
                .AllowCredentials();
