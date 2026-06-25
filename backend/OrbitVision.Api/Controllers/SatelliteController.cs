@@ -25,19 +25,7 @@ public class SattelliteControler : ControllerBase
     {
         try
         {
-            //trying mirror address for celestrak, because of 403 error
             var url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=TLE";
-
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-
-            request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-            request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-            request.Headers.Add("Accept-Language", "en-US,en;q=0.5");
-
-            var response = await _httpClient.SendAsync(request);
-
-            response.EnsureSuccessStatusCode();
-            // var url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=TLE";
             string rawData = await _httpClient.GetStringAsync(url);
 
             string[] lines = rawData.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
