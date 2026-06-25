@@ -12,6 +12,7 @@ public class SattelliteControler : ControllerBase
     private readonly SatelliteService _satelliteService;
     private readonly AppDbContext _db;
     private readonly HttpClient _httpClient;
+
     public SattelliteControler(SatelliteService satelliteService, AppDbContext db, HttpClient httpClient)
     {
         _satelliteService = satelliteService;
@@ -19,17 +20,21 @@ public class SattelliteControler : ControllerBase
         _httpClient = httpClient;
     }
 
-    //TESTOWA FUNKCJA
+  
     [HttpGet("sync")] 
     public async Task<IActionResult> SyncData()
     {
         try
         {
             var url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=TLE";
+            
+ 
+            _httpClient.DefaultRequestHeaders.UserAgent.Clear();
+            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+
             string rawData = await _httpClient.GetStringAsync(url);
 
             string[] lines = rawData.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-
             var satellitesToInsert = new List<Satellite>();
             var now = DateTime.UtcNow;
             var expiration = now.AddHours(24);
