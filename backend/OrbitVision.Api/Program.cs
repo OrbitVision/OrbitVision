@@ -14,10 +14,11 @@ builder.Services.AddDbContext<AppDbContext>(
 builder.Services.AddControllers();
 builder.Services.AddScoped<OrbitVision.API.Services.SatelliteService>();
 
-builder.Services.AddHttpClient(string.Empty, client =>
-{
-    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-});
+builder.Services.AddHttpClient();
+// builder.Services.AddHttpClient(string.Empty, client =>
+// {
+//     client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+// });
 
 
 

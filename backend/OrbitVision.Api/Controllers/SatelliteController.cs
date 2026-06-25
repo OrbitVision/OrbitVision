@@ -25,7 +25,9 @@ public class SattelliteControler : ControllerBase
     {
         try
         {
-            var url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=TLE";
+            //trying mirror address for celestrak, because of 403 error
+            var url = "https://raw.githubusercontent.com/lightingghost/celestrak-tles/master/active.txt";
+            // var url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=TLE";
             string rawData = await _httpClient.GetStringAsync(url);
 
             string[] lines = rawData.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
