@@ -17,12 +17,12 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
 
     return (
         <>
-            <div className="bg-black">
-                <form>
+            <div className="bg-black w-full py-4">
+                <form className='flex items-center justify-center gap-3'>
                     {/* Wyszukiwanie input */}
                     <input
                         type="text"
-                        className="bg-white "
+                        className="w-80 rounded-lg bg-white "
                         name="searchBarInput"
                         value={searchInput}
                         onChange={(e) => setSearchInput(e.target.value)}

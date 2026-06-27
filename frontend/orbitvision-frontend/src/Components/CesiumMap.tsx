@@ -4,6 +4,8 @@ import SearchBar from "./SearchBar";
 import { axiosGetData } from "../api/axios";
 
 
+
+
 interface SatellitePoint {
     latitude: number;
     longitude: number;
@@ -119,7 +121,7 @@ export default function CesiumMap() {
         viewer.clock.shouldAnimate = true;
 
         // Kamera leci do satelity
-        viewer.zoomTo(satelliteEntity);
+        // viewer.zoomTo(satelliteEntity);
 
         return satelliteEntity;
     }
@@ -158,6 +160,14 @@ export default function CesiumMap() {
             },
         });
 
+        viewer.camera.setView({
+            destination: Cesium.Cartesian3.fromDegrees(
+                0, // długość geograficzna
+                0, // szerokość geograficzna 
+                20_000_000 // Wysokość kamery nad ziemią w metrach
+            )
+        });
+
         const scene = viewer.scene;
 
         scene.camera.moveEnd.addEventListener(() => {
@@ -187,6 +197,7 @@ export default function CesiumMap() {
 
         viewerRef.current = viewer;
 
+        handleSearchSatellite();
 
         return () => {
             if (!viewer.isDestroyed()) {
