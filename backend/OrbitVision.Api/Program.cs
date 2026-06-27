@@ -1,6 +1,8 @@
 using Scalar.AspNetCore;
 using Microsoft.AspNetCore.OpenApi;
 using OrbitVision.API.Data;
+using OrbitVision.API.Services;
+using OrbitVision.API.Domain;
 using Microsoft.EntityFrameworkCore;
 
 DotNetEnv.Env.Load();
@@ -14,7 +16,8 @@ builder.Services.AddDbContext<AppDbContext>(
 );
 
 builder.Services.AddControllers();
-builder.Services.AddScoped<OrbitVision.API.Services.SatelliteService>();
+builder.Services.AddScoped<SatelliteService>();
+builder.Services.AddScoped<OrbitCalculator>();
 
 builder.Services.AddHttpClient<SattelliteControler>(client =>
 {
