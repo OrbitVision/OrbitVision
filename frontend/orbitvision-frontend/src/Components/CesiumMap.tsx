@@ -1,13 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import * as Cesium from "cesium";
 import SearchBar from "./SearchBar";
-import { axiosGetData } from "../api/axios";
+import { axiosGetData, axiosGetMultiple } from "../api/axios";
+
 
 interface SatellitePoint {
     latitude: number;
     longitude: number;
     altitudeKilometers: number;
     timestamp: string;
+}
+
+interface Satellite
+{
+    name: string;
+    satellitePoints: SatellitePoint[];
+}
+
+interface Sattellites
+{
+    satellites: Satellite[];
 }
 
 export default function CesiumMap() {
@@ -22,16 +34,18 @@ export default function CesiumMap() {
 
         try {
             // pobieranie danych o satelicie
-            const res = await axiosGetData();
+            const res = await axiosGetMultiple();
             console.log(res);
 
             if (res && res.data && res.data.points) {
                 // Ustawianie punktów 
-                setPoints(res.data.points);
-                console.log("Chyba git:", res.data.points);
 
-                dodajSateliteZTrajektoria(viewerRef.current, res.data.points, res.data.satelliteName);
-                console.log(viewerRef.current.entities.values);
+                
+                // setPoints(res.data.points);
+                // console.log("Chyba git:", res.data.points);
+
+                // dodajSateliteZTrajektoria(viewerRef.current, res.data.points, res.data.satelliteName);
+                // console.log(viewerRef.current.entities.values);
             }
         } catch (error) {
             console.error("Error:", error);
@@ -55,7 +69,7 @@ export default function CesiumMap() {
 
     
 
-    function dodajSateliteZTrajektoria(
+    function AddSatelliteFromTrajectory(
             viewer: Cesium.Viewer,
             points: {
               latitude: number;
