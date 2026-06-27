@@ -88,4 +88,10 @@ public class SattelliteControler : ControllerBase
     {
         return await _satelliteService.GetSatelliteData();
     }
+
+    [HttpGet("getThree")]
+    public async Task<MultipleSatellitesResponse?> GetMultipleSatellites()
+    {
+        return await _satelliteService.GetMultipleSatellitesAsync();
+    }
 }

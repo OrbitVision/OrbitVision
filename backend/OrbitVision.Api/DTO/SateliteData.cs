@@ -1,3 +1,7 @@
+public record MultipleSatellitesResponse(
+    List<SatelliteRouteResponse> Satellites
+);
+
 public record SatelliteRouteResponse(
     string SatelliteName, 
     List<SatellitePoint> Points

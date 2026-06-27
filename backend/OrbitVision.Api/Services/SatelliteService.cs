@@ -1,5 +1,6 @@
 using OrbitVision.API.Data;
 using SGPdotNET.CoordinateSystem; // Contains EciCoordinate / GeodeticCoordinate
+using SGPdotNET.Observation;
 using SGPdotNET.Propagation;      // Matches your docs: Sgp4, FindPosition
 using SGPdotNET.TLE;              // Contains Tle
 
@@ -22,32 +23,71 @@ public class SatelliteService
         _dbContext = dbContext;
     }
 
+    public async Task<MultipleSatellitesResponse?> GetMultipleSatellitesAsync()
+    {
+        try
+        {
+            var data = _dbContext.Satellites
+                .Take(3)
+                .ToList();
+
+            var res = new List<SatelliteRouteResponse>();
+
+            if (data != null)
+            {
+                foreach(Models.Satellite s in data)
+                {
+                    var tle = new Tle(s.Name, s.Line1, s.Line2);
+                    var t = new Sgp4(tle);
+
+                    ///////////////////////
+                    double meanMotion = tle.MeanMotionRevPerDay;
+                    double period = 1440.0 / meanMotion;
+                    double periodS = period * 60.0;
+                    ///////////////////////
+
+                    int totalPoints = 200;
+                    double step = periodS / totalPoints;
+
+                    var pointsList = new List<SatellitePoint>();
+                    DateTime startTime = DateTime.UtcNow;
+
+                    // Generowanie punktów na najbliższe 10 minut co 10 sekund
+                    for (int i = 0; i < totalPoints; i++)
+                    {
+                        double currentOf = i * step;
+                        DateTime targetTime = startTime.AddSeconds(currentOf);
+                        EciCoordinate eci = t.FindPosition(targetTime);          
+                        GeodeticCoordinate geo = eci.ToGeodetic();
+                        
+                        pointsList.Add(new SatellitePoint(
+                            geo.Latitude.Degrees,
+                            geo.Longitude.Degrees,
+                            geo.Altitude,
+                            targetTime
+                        ));
+                    }
+
+                    
+                    var singleSatellite = new SatelliteRouteResponse(s.Name, pointsList);
+                    res.Add(singleSatellite);
+                    
+                }
+                return new MultipleSatellitesResponse(res);
+            }
+            return null;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    
+    }
+
     public async Task<SatelliteRouteResponse?> GetSatelliteData()
     {
         try
         {
-            // var url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=STATIONS&FORMAT=TLE";
-            // string rawData = await _httpProvider.GetStringAsync(url);
-
-            // string[] lines = rawData.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries)
-            //                         .Select(line => line.TrimEnd())
-            //                         .ToArray();
-
-            // var tleList = new List<TleEntry>();
-
-            // for (int i = 0; i <= lines.Length - 3; i += 3)
-            // {
-            //     tleList.Add(new TleEntry
-            //     {
-            //         Name = lines[i],
-            //         Line1 = lines[i + 1],
-            //         Line2 = lines[i + 2]
-            //     });
-            // }
-
-            // var tleArray = tleList.ToArray();
-            
-
             var data = _dbContext.Satellites.FirstOrDefault();
             if (data != null)
             {
@@ -86,45 +126,6 @@ public class SatelliteService
 
                 return response;
             }
-
-            // if (tleArray.Length > 0)
-            // {
-            //     var tle = new Tle(tleArray[0].Name, tleArray[0].Line1, tleArray[0].Line2);
-            //     var t = new Sgp4(tle);
-
-            //     ///////////////////////
-            //     double meanMotion = tle.MeanMotionRevPerDay;
-            //     double period = 1440.0 / meanMotion;
-            //     double periodS = period * 60.0;
-            //     ///////////////////////
-
-            //     int totalPoints = 200;
-            //     double step = periodS / totalPoints;
-
-            //     var pointsList = new List<SatellitePoint>();
-            //     DateTime startTime = DateTime.UtcNow;
-
-            //     // Generowanie punktów na najbliższe 10 minut co 10 sekund
-            //     for (int i = 0; i < totalPoints; i++)
-            //     {
-            //         double currentOf = i * step;
-            //         DateTime targetTime = startTime.AddSeconds(currentOf);
-            //         EciCoordinate eci = t.FindPosition(targetTime);          
-            //         GeodeticCoordinate geo = eci.ToGeodetic();
-                    
-            //         pointsList.Add(new SatellitePoint(
-            //             geo.Latitude.Degrees,
-            //             geo.Longitude.Degrees,
-            //             geo.Altitude,
-            //             targetTime
-            //         ));
-            //     }
-
-            //     var response = new SatelliteRouteResponse(tleArray[0].Name, pointsList);
-
-            //     return response;
-            // }
-
             return null;
         }
         catch (Exception)
