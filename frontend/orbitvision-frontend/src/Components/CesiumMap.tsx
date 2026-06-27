@@ -3,9 +3,6 @@ import * as Cesium from "cesium";
 import SearchBar from "./SearchBar";
 import { axiosGetData } from "../api/axios";
 
-
-
-
 interface SatellitePoint {
     latitude: number;
     longitude: number;
@@ -18,14 +15,18 @@ export default function CesiumMap() {
     const viewerRef = useRef<Cesium.Viewer | null>(null);
     const [points, setPoints] = useState<SatellitePoint[]>([]);
     
+
+    // Wyszukiwanie satelity
     const handleSearchSatellite = async () => {
         if (!viewerRef.current) return;
 
         try {
+            // pobieranie danych o satelicie
             const res = await axiosGetData();
             console.log(res);
 
             if (res && res.data && res.data.points) {
+                // Ustawianie punktów 
                 setPoints(res.data.points);
                 console.log("Chyba git:", res.data.points);
 
@@ -36,7 +37,24 @@ export default function CesiumMap() {
             console.error("Error:", error);
         }
     };
+
+
+    //Obliczanie promienia, w jakim okręgu jest widoczna satelita
+    function getVisibilityRadius(sateliteHeight: number)
+    {
+        let minElevetionDeegrees: number = 10;
+
+        const earthRadius = 6_357_000;
+
+        const elevation = Cesium.Math.toRadians(minElevetionDeegrees);
+
+        const centralAngle = Math.acos((earthRadius/ (earthRadius + sateliteHeight)) * Math.cos(elevation)) - elevation;
+
+        return earthRadius * centralAngle;
+    }
+
     
+
     function dodajSateliteZTrajektoria(
             viewer: Cesium.Viewer,
             points: {
@@ -55,28 +73,36 @@ export default function CesiumMap() {
         console.log(viewer)
         const positionProperty = new Cesium.SampledPositionProperty();
 
+
+        //Ustawianie czasu dla poszczególnych punktów
         points.forEach((point) => {
         const time = Cesium.JulianDate.fromIso8601(point.timestamp);
 
+        //ustawianie pozycji satelity
         const position = Cesium.Cartesian3.fromDegrees(
             point.longitude,
             point.latitude,
             point.altitudeKilometers * 1000
         );
 
+        // Dodaje kolejne próbki pozycji satelity do właściwości pozycji
         positionProperty.addSample(time, position);
         });
 
-
+        // Pobiera czas pierwszego punktu trajektorii.
         const startTime = Cesium.JulianDate.fromIso8601(points[0].timestamp);
         
-
+        // Pobiera czas ostatniego punktu trajektorii.
         const stopTime = Cesium.JulianDate.fromIso8601(
             points[points.length - 1].timestamp
         );
 
+        // Oblicza różnicę czasu między pierwszym a ostatnim punktem trajektorii, wynik w sekundach
         const diffInTime = (new Date(points[points.length - 1].timestamp).getTime() - new Date(points[0].timestamp).getTime()) / 1000;
 
+
+        
+        // Dodawanie satelity
         const satelliteEntity = viewer.entities.add({
             name: nazwa,
 
@@ -99,7 +125,7 @@ export default function CesiumMap() {
 
             path: {
                 show: true,
-                width: 3,
+                width: 2,
                 material: Cesium.Color.CYAN,
                 leadTime: diffInTime,
                 trailTime: diffInTime
@@ -109,8 +135,71 @@ export default function CesiumMap() {
                 text: nazwa,
                 pixelOffset: new Cesium.Cartesian2(0, 20),
                 scaleByDistance: new Cesium.NearFarScalar(0.39, 0.39, 0.50, 0.50)
-            }
+            },
+            
         });
+
+
+        // Okrąg pokazujący obszar Ziemi, z którego satelita jest widoczna
+        const coverageCircle = viewer.entities.add({
+            name: `${nazwa} - obszar widoczności`,
+
+            // Pozycja środka okręgu: punkt na powierzchni Ziemi pod satelitą
+            position: new Cesium.CallbackPositionProperty((time) => {
+            const satellitePosition = positionProperty.getValue(time);
+        
+            if (!satellitePosition) {
+              return undefined;
+            }
+        
+            const cartographic =
+              Cesium.Cartographic.fromCartesian(satellitePosition);
+        
+            return Cesium.Cartesian3.fromRadians(
+              cartographic.longitude,
+              cartographic.latitude,
+              0
+            );
+          }, false),
+      
+          ellipse: {
+            // Promień okręgu obliczany na podstawie aktualnej wysokości satelity
+            semiMajorAxis: new Cesium.CallbackProperty((time) => {
+              const satellitePosition = positionProperty.getValue(time);
+            
+              if (!satellitePosition) {
+                return 1;
+              }
+          
+              const cartographic =
+                Cesium.Cartographic.fromCartesian(satellitePosition);
+          
+              return getVisibilityRadius(cartographic.height);
+            }, false),
+        
+            semiMinorAxis: new Cesium.CallbackProperty((time) => {
+              const satellitePosition = positionProperty.getValue(time);
+            
+              if (!satellitePosition) {
+                return 1;
+              }
+          
+              const cartographic =
+                Cesium.Cartographic.fromCartesian(satellitePosition);
+          
+              return getVisibilityRadius(cartographic.height);
+            }, false),
+        
+            // Okrąg leży na powierzchni elipsoidy Ziemi
+            height: 0,
+            heightReference: Cesium.HeightReference.NONE,
+        
+            material: Cesium.Color.CYAN.withAlpha(0.18),
+            outline: true,
+            outlineColor: Cesium.Color.CYAN
+          }
+        });
+        
 
         viewer.clock.startTime = startTime.clone();
         viewer.clock.stopTime = stopTime.clone();
@@ -146,6 +235,7 @@ export default function CesiumMap() {
             sceneModePicker: false,
             fullscreenButton: false,
             creditContainer: document.createElement("div"),
+            
 
             requestRenderMode: true,
 
@@ -210,7 +300,7 @@ export default function CesiumMap() {
 
     return (
         <div className="relative w-full h-full">
-            <div className="absolute top-4 left-4 z-10">
+            <div className="absolute top-4 left-0 w-full z-10">
                 <SearchBar onSearch={handleSearchSatellite} />
             </div>
             <div ref={containerRef} className="w-full h-full" />
