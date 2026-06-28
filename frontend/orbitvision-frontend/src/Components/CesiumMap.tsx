@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as Cesium from "cesium";
 import SearchBar from "./SearchBar";
 import { axiosGetMultiple } from "../api/axios";
-import {AddSatelliteFromTrajectory} from "../Utils/AddSatellite";
+import { AddSatelliteFromTrajectory } from "../Utils/AddSatellite";
 
 
 //---------Interfejsy do pobierania danych--------------
@@ -13,8 +13,7 @@ interface SatellitePoint {
     timestamp: string;
 }
 
-interface Satellite
-{
+interface Satellite {
     satelliteName: string;
     points: SatellitePoint[];
 }
@@ -34,7 +33,7 @@ export default function CesiumMap() {
             // pobieranie danych o satelicie
             const res = await axiosGetMultiple();
             setSatellites(res.data.satellites);
-            
+
 
             console.log(res.data.satellites);
 
@@ -47,18 +46,16 @@ export default function CesiumMap() {
         }
     };
 
-    
+
 
     useEffect(() => {
-        if(selectedSatellites != null)
-        {
+        if (selectedSatellites != null) {
             console.log("Wybrane satelity: ", selectedSatellites)
         }
     }, [selectedSatellites]);
 
     useEffect(() => {
-        if(sattellites != null)
-        {
+        if (sattellites != null) {
             console.log("Satelity: ", sattellites)
         }
     }, [sattellites]);
@@ -78,7 +75,7 @@ export default function CesiumMap() {
             sceneModePicker: false,
             fullscreenButton: false,
             creditContainer: document.createElement("div"),
-            
+
             requestRenderMode: true,
 
             contextOptions: {
