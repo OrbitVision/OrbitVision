@@ -25,12 +25,25 @@ public class SatelliteService
         _orbitCalculator = orbitCalculator;
     }
 
+
+    public async Task<List<string>?> GetAllNamesAsync()
+    {
+        try
+        {
+            var data = _dbContext.Satellites.Select(s => s.Name).ToList();
+            return data;
+        }
+        catch (Exception)
+        { 
+            return null;  
+        }
+    }
     public async Task<MultipleSatellitesResponse?> GetMultipleSatellitesAsync()
     {
         try
         {
             var data = _dbContext.Satellites
-                .Take(50)
+                .Take(5)
                 .ToList();
 
             var res = new List<SatelliteRouteResponse>();
