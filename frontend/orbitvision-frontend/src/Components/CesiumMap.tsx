@@ -22,7 +22,7 @@ export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Cesium.Viewer | null>(null);
     const [sattellites, setSatellites] = useState<Satellite[]>([]);
-    const [selectedSatellites, setSelectedSatellites] = useState<Satellite[]>([]);
+    // const [selectedSatellites, setSelectedSatellites] = useState<Satellite[]>([]);
 
 
     // Wyszukiwanie satelity
@@ -48,11 +48,11 @@ export default function CesiumMap() {
 
 
 
-    useEffect(() => {
-        if (selectedSatellites != null) {
-            console.log("Wybrane satelity: ", selectedSatellites)
-        }
-    }, [selectedSatellites]);
+    // useEffect(() => {
+    //     if (selectedSatellites != null) {
+    //         console.log("Wybrane satelity: ", selectedSatellites)
+    //     }
+    // }, [selectedSatellites]);
 
     useEffect(() => {
         if (sattellites != null) {

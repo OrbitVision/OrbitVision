@@ -24,10 +24,10 @@ export default function SearchBar({
     };
 
     return (
-        <div className="w-full bg-transparent py-4">
+        <div className="w-full bg-transparent py-4 pointer-events-none">
             <form
                 onSubmit={handle}
-                className="flex items-center justify-center gap-3"
+                className="flex items-center justify-center gap-3 pointer-events-auto"
             >
                 <input
                     type="text"
@@ -54,11 +54,12 @@ export default function SearchBar({
                             {satellite.satelliteName}
                         </div>
                         <div>
-                            <input type="checkbox" id={satellite.satelliteName} className=" m-3 h-6 w-6 accent-gray-900 appearance-auto "  ></input>
+                            <input type="checkbox" id={satellite.satelliteName} className=" m-3 h-6 w-6 accent-gray-900 appearance-auto pointer-events-auto"  ></input>
                         </div>
                     </div>
                 ))}
             </div>
         </div>
+        
     );
 }
