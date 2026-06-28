@@ -19,16 +19,11 @@ interface Satellite
     points: SatellitePoint[];
 }
 
-interface Sattellites
-{
-    satellites: Satellite[];
-}
-
 export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Cesium.Viewer | null>(null);
     const [points, setPoints] = useState<SatellitePoint[]>([]);
-    const [sattellites, setSatellites] = useState<Sattellites[]>([]);
+    const [sattellites, setSatellites] = useState<Satellite[]>([]);
 
     // Wyszukiwanie satelity
     const handleSearchSatellite = async () => {
@@ -37,10 +32,10 @@ export default function CesiumMap() {
         try {
             // pobieranie danych o satelicie
             const res = await axiosGetMultiple();
-            setSatellites(res.data);
+            setSatellites(res.data.satellites);
             setPoints(res.data.satellites[0].points);
 
-            console.log(sattellites);
+            console.log(res.data.satellites);
 
             //Wyświetlanie każdej satelity
             res.data.satellites.forEach((satellite: Satellite) => {
@@ -72,9 +67,7 @@ export default function CesiumMap() {
             fullscreenButton: false,
             creditContainer: document.createElement("div"),
             
-
             requestRenderMode: true,
-
 
             contextOptions: {
                 webgl: {
@@ -137,7 +130,7 @@ export default function CesiumMap() {
     return (
         <div className="relative w-full h-full">
             <div className="absolute top-4 left-0 w-full z-10">
-                <SearchBar onSearch={handleSearchSatellite} />
+                <SearchBar onSearch={handleSearchSatellite} satellites={sattellites} />
             </div>
             <div ref={containerRef} className="w-full h-full" />
         </div>
