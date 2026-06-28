@@ -94,4 +94,10 @@ public class SattelliteControler : ControllerBase
     {
         return await _satelliteService.GetMultipleSatellitesAsync();
     }
+
+    [HttpGet("allNames")]
+    public async Task<List<string>?> getAllNames()
+    {
+        return await _satelliteService.GetAllNamesAsync();
+    }
 }
