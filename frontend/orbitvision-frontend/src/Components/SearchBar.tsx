@@ -49,12 +49,14 @@ export default function SearchBar({
             {/* Lista satelitów */}
             <div className=" mt-2 w-80 overflow-hidden rounded-lg bg-gray-900/25 shadow-md">
                 {satellites.map((satellite) => (
-                    <div
-                        key={satellite.satelliteName}
-                        className="border-b  bg-gray-900/25  px-4 py-2 text-white last:border-b-0"
-                    >
+                    <div key={satellite.satelliteName} className="border-b text-white last:border-b-0 flex justify-between">
+                        <div  className=" bg-transparent  px-4 py-2 text-white ">
                         {satellite.satelliteName}
-                    </div>
+                        </div> 
+                        <div>
+                            <input type="checkbox" id={satellite.satelliteName} className=" m-3 h-6 w-6 accent-gray-900 appearance-auto "  ></input>
+                        </div>
+                    </div>  
                 ))}
             </div>
         </div>

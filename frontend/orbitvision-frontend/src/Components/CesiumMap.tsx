@@ -22,8 +22,9 @@ interface Satellite
 export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Cesium.Viewer | null>(null);
-    const [points, setPoints] = useState<SatellitePoint[]>([]);
     const [sattellites, setSatellites] = useState<Satellite[]>([]);
+    const [selectedSatellites, setSelectedSatellites] = useState<Satellite[]>([]);
+
 
     // Wyszukiwanie satelity
     const handleSearchSatellite = async () => {
@@ -33,7 +34,7 @@ export default function CesiumMap() {
             // pobieranie danych o satelicie
             const res = await axiosGetMultiple();
             setSatellites(res.data.satellites);
-            setPoints(res.data.satellites[0].points);
+            
 
             console.log(res.data.satellites);
 
@@ -46,11 +47,22 @@ export default function CesiumMap() {
         }
     };
 
+    
+
     useEffect(() => {
-        if (points.length > 0) {
-            console.log("Punkty", points);
+        if(selectedSatellites != null)
+        {
+            console.log("Wybrane satelity: ", selectedSatellites)
         }
-    }, [points]);
+    }, [selectedSatellites]);
+
+    useEffect(() => {
+        if(sattellites != null)
+        {
+            console.log("Satelity: ", sattellites)
+        }
+    }, [sattellites]);
+
 
     useEffect(() => {
         if (!containerRef.current) return;

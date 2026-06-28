@@ -30,7 +30,7 @@ public class SatelliteService
         try
         {
             var data = _dbContext.Satellites
-                .Take(3)
+                .Take(50)
                 .ToList();
 
             var res = new List<SatelliteRouteResponse>();
