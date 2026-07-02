@@ -9,11 +9,11 @@ using SGPdotNET.TLE;
 [Route("api/[controller]")]
 public class SattelliteControler : ControllerBase
 {
-    private readonly SatelliteService _satelliteService;
+    private readonly ISatelliteService _satelliteService;
     private readonly AppDbContext _db;
     private readonly HttpClient _httpClient;
 
-    public SattelliteControler(SatelliteService satelliteService, AppDbContext db, HttpClient httpClient)
+    public SattelliteControler(ISatelliteService satelliteService, AppDbContext db, HttpClient httpClient)
     {
         _satelliteService = satelliteService;
         _db = db;
