@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OrbitVision.Api.Domain;
 using OrbitVision.API.Data;
 using OrbitVision.API.Models;
 using OrbitVision.API.Services;
@@ -20,6 +21,13 @@ public class SattelliteControler : ControllerBase
         _httpClient = httpClient;
     }
 
+    [HttpGet("test")]
+    public async Task<IActionResult> Test()
+    {
+        var t = new CalculateVisible();
+        t.CheckIfVisible("1 00694U 63047A   26183.75836606  .00001216  00000+0  13729-3 0  9994", "2 00694  30.3536 272.3159 0545772  14.8297 346.7644 14.12546036147908", 5.443132, -56.451715, 0);
+        return Ok("Test completed");
+    }
 
     // [HttpGet("sync")]
     // public async Task<IActionResult> SyncData()
