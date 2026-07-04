@@ -8,6 +8,7 @@ namespace OrbitVision.Api.Domain
 {
     public class CalculateVisible
     {
+        //need to return info about the time when the satellite is visible, and the azimuth and elevation angles at that time
         public void CheckIfVisible(string l1, string l2, double obsLat, double obsLon, double obsAlt)
         {
             var tle = new Tle("Satellite", l1, l2);

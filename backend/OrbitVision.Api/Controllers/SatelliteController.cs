@@ -21,7 +21,8 @@ public class SattelliteControler : ControllerBase
         _httpClient = httpClient;
     }
 
-    [HttpGet("test")]
+    // to complete - need to return info about the time when the satellite is visible, and the azimuth and elevation angles at that time also need to workd asynchronously
+    [HttpGet("visible")]
     public async Task<IActionResult> Test()
     {
         var t = new CalculateVisible();
