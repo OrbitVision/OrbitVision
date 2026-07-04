@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using OrbitVision.Api.Services;
 using OrbitVision.API.Data;
 using OrbitVision.API.Domain;
 using SGPdotNET.CoordinateSystem; // Contains EciCoordinate / GeodeticCoordinate
@@ -17,27 +19,39 @@ public class SatelliteService : ISatelliteService
 {
     private readonly AppDbContext _dbContext;
     private readonly OrbitCalculator _orbitCalculator;
-    public SatelliteService(AppDbContext dbContext, OrbitCalculator orbitCalculator)
+    private readonly ISatelliteRefreshService _satelliteRefreshService;
+    public SatelliteService(AppDbContext dbContext, OrbitCalculator orbitCalculator, ISatelliteRefreshService satelliteRefreshService)
     {
         _dbContext = dbContext;
         _orbitCalculator = orbitCalculator;
+        _satelliteRefreshService = satelliteRefreshService;
     }
 
+    private async Task CheckForRefresh()
+    {
+        var expDate = await _dbContext.Satellites.Select(s => s.ExpDate).FirstOrDefaultAsync();
+        if (expDate == default(DateTime) || expDate < DateTime.UtcNow)
+        {
+            await _satelliteRefreshService.RefreshSatelliteDataAsync();
+        }
+    }
 
     public async Task<List<string>?> GetAllNamesAsync()
     {
+        await CheckForRefresh();
         try
         {
             var data = _dbContext.Satellites.Select(s => s.Name).ToList();
             return data;
         }
         catch (Exception)
-        { 
-            return null;  
+        {
+            return null;
         }
     }
     public async Task<MultipleSatellitesResponse?> GetMultipleSatellitesAsync()
     {
+        await CheckForRefresh();
         try
         {
             var data = _dbContext.Satellites
@@ -48,13 +62,13 @@ public class SatelliteService : ISatelliteService
 
             if (data != null)
             {
-                foreach(Models.Satellite s in data)
+                foreach (Models.Satellite s in data)
                 {
                     var pointsList = _orbitCalculator.CalculateOrbit(s.Name, s.Line1, s.Line2);
-                    
+
                     var singleSatellite = new SatelliteRouteResponse(s.Name, pointsList);
                     res.Add(singleSatellite);
-                    
+
                 }
                 return new MultipleSatellitesResponse(res);
             }
@@ -64,11 +78,12 @@ public class SatelliteService : ISatelliteService
         {
             return null;
         }
-    
+
     }
 
     public async Task<SatelliteRouteResponse?> GetSatelliteData()
     {
+        await CheckForRefresh();
         try
         {
             var data = _dbContext.Satellites.FirstOrDefault();

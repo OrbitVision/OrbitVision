@@ -3,6 +3,7 @@ using OrbitVision.API.Data;
 using OrbitVision.API.Services;
 using OrbitVision.API.Domain;
 using Microsoft.EntityFrameworkCore;
+using OrbitVision.Api.Services;
 
 DotNetEnv.Env.Load();
 
@@ -16,6 +17,7 @@ builder.Services.AddDbContext<AppDbContext>(
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<ISatelliteService, SatelliteService>();
+builder.Services.AddScoped<ISatelliteRefreshService, SatelliteRefreshService>();
 builder.Services.AddScoped<OrbitCalculator>();
 
 builder.Services.AddHttpClient<SattelliteControler>(client =>
@@ -42,11 +44,11 @@ app.UseCors();
 
 //if (app.Environment.IsDevelopment())
 //{
-    app.MapOpenApi();
-    app.MapScalarApiReference(options => 
-    {
-        options.Authentication = null; 
-    });
+app.MapOpenApi();
+app.MapScalarApiReference(options =>
+{
+    options.Authentication = null;
+});
 //}
 
 app.UseHttpsRedirection();
