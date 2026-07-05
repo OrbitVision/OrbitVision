@@ -13,3 +13,15 @@ public record SatellitePoint(
     double AltitudeKilometers, 
     DateTime Timestamp
 );
+
+
+//returning tle to offload the calculation of the satellite position to the client side, so that the server does not have to do it
+public record SatelliteDataResponse(
+    string SatelliteName, 
+    string tle1,
+    string tle2
+);
+
+public record MultipleSatelliteDataResponse(
+    List<SatelliteDataResponse> Satellites
+);

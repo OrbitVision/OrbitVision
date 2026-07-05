@@ -49,7 +49,7 @@ public class SatelliteService : ISatelliteService
             return null;
         }
     }
-    public async Task<MultipleSatellitesResponse?> GetMultipleSatellitesAsync()
+    public async Task<MultipleSatelliteDataResponse?> GetMultipleSatellitesAsync()
     {
         await CheckForRefresh();
         try
@@ -58,21 +58,21 @@ public class SatelliteService : ISatelliteService
                 .Take(5)
                 .ToList();
 
-            var res = new List<SatelliteRouteResponse>();
+            var res = new List<SatelliteDataResponse>();
+            return new MultipleSatelliteDataResponse(data.Select(s => new SatelliteDataResponse(s.Name, s.Line1, s.Line2)).ToList());
+            // if (data != null)
+            // {
+            //     foreach (Models.Satellite s in data)
+            //     {
+            //         var pointsList = _orbitCalculator.CalculateOrbit(s.Name, s.Line1, s.Line2);
 
-            if (data != null)
-            {
-                foreach (Models.Satellite s in data)
-                {
-                    var pointsList = _orbitCalculator.CalculateOrbit(s.Name, s.Line1, s.Line2);
+            //         var singleSatellite = new SatelliteDataResponse(s.Name, s.Line1, s.Line2);
+            //         res.Add(singleSatellite);
 
-                    var singleSatellite = new SatelliteRouteResponse(s.Name, pointsList);
-                    res.Add(singleSatellite);
-
-                }
-                return new MultipleSatellitesResponse(res);
-            }
-            return null;
+            //     }
+            //     return new MultipleSatelliteDataResponse(res);
+            // }
+            // return null;
         }
         catch (Exception)
         {
@@ -81,20 +81,22 @@ public class SatelliteService : ISatelliteService
 
     }
 
-    public async Task<SatelliteRouteResponse?> GetSatelliteData()
+    public async Task<SatelliteDataResponse?> GetSatelliteData()
     {
         await CheckForRefresh();
         try
         {
-            var data = _dbContext.Satellites.FirstOrDefault();
-            if (data != null)
-            {
-                var pointsList = _orbitCalculator.CalculateOrbit(data.Name, data.Line1, data.Line2);
-                var response = new SatelliteRouteResponse(data.Name, pointsList);
+            var data = _dbContext.Satellites.Select(s => new SatelliteDataResponse(s.Name, s.Line1, s.Line2)).FirstOrDefault();
+            return data;
 
-                return response;
-            }
-            return null;
+            // if (data != null)
+            // {
+            //     var pointsList = _orbitCalculator.CalculateOrbit(data.Name, data.Line1, data.Line2);
+            //     var response = new SatelliteDataResponse(data.Name, data.Line1, data.Line2);
+
+            //     return response;
+            // }
+            // return null;
         }
         catch (Exception)
         {
