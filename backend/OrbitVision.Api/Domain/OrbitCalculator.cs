@@ -1,7 +1,6 @@
 using SGPdotNET.CoordinateSystem;
 using SGPdotNET.Propagation;
 using SGPdotNET.TLE;
-using OrbitVision.API.Data; // Zakładam, że tu jest SatellitePoint
 
 namespace OrbitVision.API.Domain;
 
