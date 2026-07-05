@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { axiosGetNames } from "../api/axios";
 
 interface Satellite {
   satelliteName: string;
@@ -10,10 +11,10 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({
-  onSearch,
-  satellites,
+  onSearch
 }: SearchBarProps) {
   const [searchInput, setSearchInput] = useState("");
+  const [sattelliteNames, setSatellitesNames] = useState<string[]>([]);
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -25,8 +26,22 @@ export default function SearchBar({
     }
   };
 
+  useEffect(() => {
+    async function getData()
+    {
+      const names = await axiosGetNames();
+      setSatellitesNames(names.data);
+      console.log(sattelliteNames)
+    };
 
+    getData();
+  }, []);
 
+  useEffect(() => {
+        if (sattelliteNames != null) {
+            console.log("Satelity: ", sattelliteNames)
+        }
+    }, [sattelliteNames]);
   return (
     <>
       {/* Wyszukiwarka */}
@@ -72,13 +87,13 @@ export default function SearchBar({
         lg:block
       `}
       >
-        {satellites.map((satellite) => (
+        {sattelliteNames.map((satellite, index) => (
           <div
-            key={satellite.satelliteName}
+            key={index}
             className="flex items-center justify-between border-b border-white/40 text-white last:border-b-0"
           >
             <span className="px-4 py-2">
-              {satellite.satelliteName}
+              {satellite}
             </span>
 
             <input

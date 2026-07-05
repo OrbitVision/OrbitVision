@@ -18,10 +18,13 @@ interface Satellite {
     points: SatellitePoint[];
 }
 
+
+
 export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Cesium.Viewer | null>(null);
     const [sattellites, setSatellites] = useState<Satellite[]>([]);
+    
     // const [selectedSatellites, setSelectedSatellites] = useState<Satellite[]>([]);
 
 
