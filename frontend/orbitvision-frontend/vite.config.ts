@@ -10,4 +10,12 @@ export default defineConfig({
     tailwindcss(),
     cesium()
   ],
+  resolve: {
+    alias: {
+      'node:module': 'empty-module'
+    }
+  },
+  define: {
+    'process': {}
+  }
 })
