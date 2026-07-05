@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { axiosGetNames } from "../api/axios";
 
 interface Satellite {
@@ -27,8 +27,7 @@ export default function SearchBar({
   };
 
   useEffect(() => {
-    async function getData()
-    {
+    async function getData() {
       const names = await axiosGetNames();
       setSatellitesNames(names.data);
       console.log(sattelliteNames)
@@ -38,10 +37,10 @@ export default function SearchBar({
   }, []);
 
   useEffect(() => {
-        if (sattelliteNames != null) {
-            console.log("Satelity: ", sattelliteNames)
-        }
-    }, [sattelliteNames]);
+    if (sattelliteNames != null) {
+      console.log("Satelity: ", sattelliteNames)
+    }
+  }, [sattelliteNames]);
   return (
     <>
       {/* Wyszukiwarka */}
