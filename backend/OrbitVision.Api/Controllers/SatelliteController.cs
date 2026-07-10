@@ -3,9 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using OrbitVision.Api.Domain;
 using OrbitVision.API.Services;
 
-// Chwilowo komentuję Authorize, żeby po merge wszystko działało bez logowania
-// Po stworzeniu logowania i rejestracji po stronie klienta, trzeba to odkomentować, żeby jwt chroniło endpointy
-//[Authorize]
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class SattelliteControler : ControllerBase
