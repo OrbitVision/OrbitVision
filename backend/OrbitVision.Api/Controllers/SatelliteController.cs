@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrbitVision.Api.Domain;
@@ -6,6 +7,7 @@ using OrbitVision.API.Models;
 using OrbitVision.API.Services;
 using SGPdotNET.TLE;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class SattelliteControler : ControllerBase
@@ -43,5 +45,21 @@ public class SattelliteControler : ControllerBase
     public async Task<List<string>?> getAllNames()
     {
         return await _satelliteService.GetAllNamesAsync();
+    }
+
+
+
+    [HttpGet("testClaims")]
+    public string GetClaims()
+    {
+        var claim = User.Claims.FirstOrDefault(c => c.Type == "Email");
+        if(claim == null)
+        {
+            return "Lipa";
+        }
+        else
+        {
+            return $"Claim: {claim.Value}";
+        }
     }
 }
