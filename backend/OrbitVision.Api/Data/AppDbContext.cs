@@ -17,7 +17,15 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<Satellite>()
             .HasIndex(s => s.Name);
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique();
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
     }
 
     public DbSet<Satellite> Satellites { get; set; }
+    public DbSet<User> Users { get; set; }
 }

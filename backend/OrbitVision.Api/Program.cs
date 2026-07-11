@@ -19,6 +19,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<ISatelliteService, SatelliteService>();
 builder.Services.AddScoped<ISatelliteRefreshService, SatelliteRefreshService>();
 builder.Services.AddScoped<OrbitCalculator>();
+builder.Services.AddScoped<UserService>();
 
 builder.Services.AddHttpClient<SattelliteControler>(client =>
 {
