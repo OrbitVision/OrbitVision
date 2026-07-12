@@ -7,16 +7,18 @@ namespace OrbitVision.API.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
+    private readonly IWebHostEnvironment _env;
     private readonly AuthService _authService;
-    public AuthController(AuthService userService)
+    public AuthController(AuthService userService, IWebHostEnvironment env)
     {
         _authService = userService;
+        _env = env;
     }
 
     [HttpPost("login")]
     public async Task<ActionResult<UserDataResponse?>> Login([FromBody] LoginRequest user)
     {
-        if(user == null || string.IsNullOrEmpty(user.Username) || string.IsNullOrEmpty(user.Password))
+        if (user == null || string.IsNullOrEmpty(user.Username) || string.IsNullOrEmpty(user.Password))
         {
             return BadRequest("Username and password are required.");
         }
@@ -30,23 +32,27 @@ public class AuthController : ControllerBase
         var accessToken = res.Value.accessToken;
         var refreshToken = res.Value.refreshToken;
 
-        Response.Cookies.Append("accessToken", accessToken, new CookieOptions{
+
+        var isProd = _env.IsProduction();
+        Response.Cookies.Append("accessToken", accessToken, new CookieOptions
+        {
             HttpOnly = true,
-            Secure = false,
-            SameSite = SameSiteMode.Lax,
+            Secure = isProd,
+            SameSite = isProd ? SameSiteMode.None : SameSiteMode.Lax,
             Expires = DateTime.UtcNow.AddMinutes(15),
             Path = "/"
         });
 
-        Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions{
+        Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+        {
             HttpOnly = true,
-            Secure = false,
-            SameSite = SameSiteMode.Lax,
+            Secure = isProd,
+            SameSite = isProd ? SameSiteMode.None : SameSiteMode.Lax,
             Expires = DateTime.UtcNow.AddDays(7),
             Path = "/"
         });
 
-        return Ok(new {message = "Login successful", userData = res.Value.Item1});
+        return Ok(new { message = "Login successful", userData = res.Value.Item1 });
     }
 
     [HttpPost("register")]
@@ -78,7 +84,8 @@ public class AuthController : ControllerBase
         var accessToken = res.Value.accessToken;
         var refreshToken = res.Value.refreshToken;
 
-        Response.Cookies.Append("accessToken", accessToken, new CookieOptions{
+        Response.Cookies.Append("accessToken", accessToken, new CookieOptions
+        {
             HttpOnly = true,
             Secure = false,
             SameSite = SameSiteMode.Lax,
@@ -86,7 +93,8 @@ public class AuthController : ControllerBase
             Path = "/"
         });
 
-        Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions{
+        Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
+        {
             HttpOnly = true,
             Secure = false,
             SameSite = SameSiteMode.Lax,
@@ -94,7 +102,7 @@ public class AuthController : ControllerBase
             Path = "/"
         });
 
-        return Ok(new {message = "Refresh successfull"});
+        return Ok(new { message = "Refresh successfull" });
     }
 
 }
