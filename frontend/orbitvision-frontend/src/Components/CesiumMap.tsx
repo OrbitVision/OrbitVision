@@ -1,32 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import * as Cesium from "cesium";
 import SearchBar from "./SearchBar";
-import { axiosGetMultiple } from "../api/axios";
 import { AddSatelliteFromTrajectory } from "../Utils/AddSatellite";
-
-
-//---------Interfejsy do pobierania danych--------------
-interface SatellitePoint {
-    latitude: number;
-    longitude: number;
-    altitudeKilometers: number;
-    timestamp: string;
-}
-
-interface Satellite {
-    satelliteName: string;
-    points: SatellitePoint[];
-}
+import {useAuth} from "../Context/AuthContext";
 
 
 
 export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Cesium.Viewer | null>(null);
-    const [sattellites, setSatellites] = useState<Satellite[]>([]);
-    
-    // const [selectedSatellites, setSelectedSatellites] = useState<Satellite[]>([]);
-
+    const {user, satellites, loadSatellites, isLoadingSatellites} = useAuth();
 
     // Wyszukiwanie satelity
     const handleSearchSatellite = async () => {
@@ -34,35 +17,27 @@ export default function CesiumMap() {
 
         try {
             // pobieranie danych o satelicie
-            const res = await axiosGetMultiple();
-            setSatellites(res.data.satellites);
+            await loadSatellites();
 
-
-            console.log(res.data.satellites);
-
-            //Wyświetlanie każdej satelity
-            res.data.satellites.forEach((satellite: Satellite) => {
-                AddSatelliteFromTrajectory(viewerRef.current!, satellite.points, satellite.satelliteName);
-            });
         } catch (error) {
             console.error("Error:", error);
         }
     };
 
-
-
-    // useEffect(() => {
-    //     if (selectedSatellites != null) {
-    //         console.log("Wybrane satelity: ", selectedSatellites)
-    //     }
-    // }, [selectedSatellites]);
-
     useEffect(() => {
-        if (sattellites != null) {
-            console.log("Satelity: ", sattellites)
-        }
-    }, [sattellites]);
+        const viewer = viewerRef.current;
 
+        if (!viewer) {
+            return;
+        }
+
+        viewer.entities.removeAll();
+
+        satellites.forEach((satellite) => {
+            AddSatelliteFromTrajectory(viewer, satellite.points, satellite.satelliteName);
+        });
+
+    }, [satellites]);
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -142,8 +117,21 @@ export default function CesiumMap() {
     return (
         <div className="relative w-full h-full">
             <div className="absolute top-4 left-0 w-full z-10">
-                <SearchBar onSearch={handleSearchSatellite} satellites={sattellites} />
+                <SearchBar onSearch={handleSearchSatellite} satellites={satellites} />
             </div>
+
+            {user && (
+                <p className="absolute top-4 left-4 z-20 rounded bg-slate-900 px-3 py-2 text-white">
+                    Zalogowano jako: {user.username}
+                </p>
+            )}
+
+            {isLoadingSatellites && (
+                <p className="absolute top-4 right-4 z-20 rounded bg-slate-900 px-3 py-2 text-white">
+                    Ładowanie satelitów...
+                </p>
+            )}
+
             <div ref={containerRef} className="w-full h-full" />
         </div>
     )

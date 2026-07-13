@@ -1,13 +1,15 @@
 import { useState, type FormEvent } from 'react';
 import universeBackground from '../assets/Universe_Background.jpg';
-import { axiosLogin } from '../api/axios';
+import {useAuth} from '../Context/AuthContext';
 import {Link, useNavigate} from 'react-router-dom';
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [isLogging, setIsLogging] = useState(false);
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -32,16 +34,14 @@ export default function LoginPage() {
         }
 
         try {
-            const user = await axiosLogin(username, password);
-
-            console.log('Zalogowano pomyślnie:', user);
-
-            
-
+            setIsLogging(true);
+            await login(username, password);
             navigate('/satellites');
         } catch (error) {
             console.error(error);
             setError('Nieprawidłowa nazwa użytkownika lub hasło.');
+        }finally {
+            setIsLogging(false);
         }
         
         
@@ -106,8 +106,9 @@ export default function LoginPage() {
                     <button
                         type="submit"
                         className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-500 active:scale-[0.98]"
+                        disabled={isLogging}
                     >
-                        Zaloguj się
+                        {isLogging ? 'Logowanie...' : 'Zaloguj się'}
                     </button>
                 </form>
 
