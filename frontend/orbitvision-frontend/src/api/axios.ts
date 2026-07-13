@@ -1,18 +1,18 @@
 import axiosInstance from "./axiosInstance";
 import { calculateOrbits } from "../Domain/calculateOrbits";
 
-
-export interface LoginRequest {
-    login: string;
-    password: string;
-}
-
 export interface LoginResponse {
     message: string;
     Userdata: {
         username: string;
         email: string;
     };
+}
+
+export interface RegisterResponse {
+    email: string;
+    password: string;
+    username: string;
 }
 
 export const axiosGetData = async () => {
@@ -54,6 +54,16 @@ export const axiosGetNames = async () => {
 export const axiosLogin = async (username: string, password: string):Promise<LoginResponse> => {
     try{
         const response = await axiosInstance.post<LoginResponse>("/api/Auth/login", {username, password});
+        return response.data;
+    }catch(error){
+        console.error(error);
+        throw error;
+    }
+}
+
+export const axiosRegister = async (username: string, email: string, password: string):Promise<RegisterResponse> => {
+    try{
+        const response = await axiosInstance.post<RegisterResponse>("/api/Auth/register", {username, email, password});
         return response.data;
     }catch(error){
         console.error(error);
