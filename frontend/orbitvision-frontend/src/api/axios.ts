@@ -3,7 +3,7 @@ import { calculateOrbits } from "../Domain/calculateOrbits";
 
 export interface LoginResponse {
     message: string;
-    Userdata: {
+    userData: {
         username: string;
         email: string;
     };
