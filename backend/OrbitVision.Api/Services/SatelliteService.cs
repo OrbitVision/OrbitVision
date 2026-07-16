@@ -36,12 +36,13 @@ public class SatelliteService : ISatelliteService
         }
     }
 
-    public async Task<List<string>?> GetAllNamesAsync()
+    public async Task<List<AllSatelliteDataResponse>?> GetAllSattellitesDataAsync()
     {
         await CheckForRefresh();
         try
         {
-            var data = _dbContext.Satellites.Select(s => s.Name).ToList();
+            //var data = _dbContext.Satellites.Select(s => s.Name).ToList();
+            var data = _dbContext.Satellites.Select(s => new AllSatelliteDataResponse(s.Name, s.Line1, s.Line2, s.ExpDate)).ToList();
             return data;
         }
         catch (Exception)
