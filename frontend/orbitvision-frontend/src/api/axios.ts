@@ -42,7 +42,7 @@ export const axiosGetMultiple = async () => {
 
 export const axiosGetNames = async () => {
     try {
-        var data = await axiosInstance.get("/api/SattelliteControler/allNames")
+        var data = await axiosInstance.get("/api/SattelliteControler/allSattellitesData")
         console.log(data);
         return data;
     } catch (error) {
@@ -51,21 +51,21 @@ export const axiosGetNames = async () => {
     }
 }
 
-export const axiosLogin = async (username: string, password: string):Promise<LoginResponse> => {
-    try{
-        const response = await axiosInstance.post<LoginResponse>("/api/Auth/login", {username, password});
+export const axiosLogin = async (username: string, password: string): Promise<LoginResponse> => {
+    try {
+        const response = await axiosInstance.post<LoginResponse>("/api/Auth/login", { username, password });
         return response.data;
-    }catch(error){
+    } catch (error) {
         console.error(error);
         throw error;
     }
 }
 
-export const axiosRegister = async (username: string, email: string, password: string):Promise<RegisterResponse> => {
-    try{
-        const response = await axiosInstance.post<RegisterResponse>("/api/Auth/register", {username, email, password});
+export const axiosRegister = async (username: string, email: string, password: string): Promise<RegisterResponse> => {
+    try {
+        const response = await axiosInstance.post<RegisterResponse>("/api/Auth/register", { username, email, password });
         return response.data;
-    }catch(error){
+    } catch (error) {
         console.error(error);
         throw error;
     }
