@@ -4,8 +4,6 @@ import SearchBar from "./SearchBar";
 import { AddSatelliteFromTrajectory } from "../Utils/AddSatellite";
 import {useAuth} from "../Context/AuthContext";
 
-
-
 export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Cesium.Viewer | null>(null);

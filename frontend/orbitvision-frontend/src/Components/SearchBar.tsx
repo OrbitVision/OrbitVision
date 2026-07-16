@@ -18,6 +18,10 @@ export default function SearchBar({
 
   const [isOpen, setIsOpen] = useState(false);
 
+  const filteredSatellitesNames = sattelliteNames.filter((satellite) =>
+    satellite.toLowerCase().includes(searchInput.trim().toLowerCase())
+  );
+
   const handle = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -73,12 +77,12 @@ export default function SearchBar({
         ☰ Lista satelitów
       </button>
 
-      {/* Lista satelit */}
+      {/* Lista satelit ze stopka akcji */}
       <div
         className={`absolute left-0 z-10
         w-80 max-w-[90vw]
-        rounded-r-lg bg-gray-900/25 shadow-md backdrop-blur
-        overflow-y-auto overflow-x-hidden
+        overflow-hidden rounded-r-xl border border-l-0 border-white/15
+        bg-gray-950/70 shadow-2xl backdrop-blur-md
         max-h-[60vh]
         lg:top-20
         top-32
@@ -86,21 +90,35 @@ export default function SearchBar({
         lg:block
       `}
       >
-        {sattelliteNames.map((satellite, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between border-b border-white/40 text-white last:border-b-0"
-          >
-            <span className="px-4 py-2">
-              {satellite}
-            </span>
+        {filteredSatellitesNames.length > 0 ? (
+          <div className="max-h-[calc(60vh-4.75rem)] overflow-y-auto overflow-x-hidden">
+          {filteredSatellitesNames.map((satellite, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between border-b border-white/20 text-white transition-colors hover:bg-white/10 last:border-b-0"
+            >
+              <span className="px-4 py-2">
+                {satellite}
+              </span>
 
-            <input
-              type="checkbox"
-              className="m-3 h-6 w-6 cursor-pointer accent-blue-500"
-            />
-          </div>
-        ))}
+              <input
+                type="checkbox"
+                className="m-3 h-6 w-6 cursor-pointer accent-blue-500"
+              />
+            </div>
+          ))}
+        </div>) :(
+          <p className="px-4 py-5 text-center text-sm text-gray-300">
+            Nie znaleziono satelitów
+          </p>
+        )}
+
+        <div className="shrink-0 bg-gray-900 p-3">
+          <button type="button" className="w-full rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
+              Wyświetl
+          </button>
+        </div>
+        
       </div>
     </>
 
