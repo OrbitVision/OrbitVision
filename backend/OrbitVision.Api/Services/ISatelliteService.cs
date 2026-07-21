@@ -2,7 +2,7 @@ namespace OrbitVision.API.Services;
 
 public interface ISatelliteService
 {
-    Task<List<string>?> GetAllNamesAsync();
+    Task<List<AllSatelliteDataResponse>?> GetAllSattellitesDataAsync();
     Task<MultipleSatelliteDataResponse?> GetMultipleSatellitesAsync();
     Task<SatelliteDataResponse?> GetSatelliteData();
 }

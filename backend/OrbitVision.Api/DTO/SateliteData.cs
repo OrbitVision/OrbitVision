@@ -22,6 +22,15 @@ public record SatelliteDataResponse(
     string tle2
 );
 
+public record AllSatelliteDataResponse(
+    string SatelliteName, 
+    string tle1,
+    string tle2,
+    DateTime expDate
+);
+
+
+
 public record MultipleSatelliteDataResponse(
     List<SatelliteDataResponse> Satellites
 );

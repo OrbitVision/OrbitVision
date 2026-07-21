@@ -37,10 +37,10 @@ public class SattelliteControler : ControllerBase
         return await _satelliteService.GetMultipleSatellitesAsync();
     }
 
-    [HttpGet("allNames")]
-    public async Task<List<string>?> getAllNames()
+    [HttpGet("allSattellitesData")]
+    public async Task<List<AllSatelliteDataResponse>?> getAllNames()
     {
-        return await _satelliteService.GetAllNamesAsync();
+        return await _satelliteService.GetAllSattellitesDataAsync();
     }
 
 
