@@ -19,6 +19,7 @@ builder.Services.AddDbContext<AppDbContext>(
 builder.Services.AddControllers();
 builder.Services.AddScoped<ISatelliteService, SatelliteService>();
 builder.Services.AddScoped<ISatelliteRefreshService, SatelliteRefreshService>();
+builder.Services.AddScoped<IWatchListService, WatchListService>();
 builder.Services.AddScoped<OrbitCalculator>();
 builder.Services.AddScoped<AuthService>();
 

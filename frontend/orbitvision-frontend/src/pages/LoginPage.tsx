@@ -102,8 +102,8 @@ export default function LoginPage() {
 
                     <button
                         type="submit"
-                        className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-500 active:scale-[0.98]"
-                        disabled={isLogging}
+                        className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-blue-500/50"
+                        disabled={isLogging} 
                     >
                         {isLogging ? 'Logowanie...' : 'Zaloguj się'}
                     </button>

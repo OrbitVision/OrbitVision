@@ -24,8 +24,21 @@ public class AppDbContext : DbContext
             .HasIndex(u => u.Email)
             .IsUnique();
 
+        modelBuilder.Entity<Watchlist>()
+            .HasOne(w => w.User)
+            .WithMany(u => u.Watchlist)
+            .HasForeignKey(w => w.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Watchlist>()
+            .HasOne(w => w.Satellite)
+            .WithMany()
+            .HasForeignKey(w => w.SatelliteId)
+            .OnDelete(DeleteBehavior.Restrict);
+
     }
 
     public DbSet<Satellite> Satellites { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Watchlist> Watchlist { get; set; }
 }

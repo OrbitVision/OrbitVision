@@ -7,4 +7,7 @@ public class User
     public string Password { get; set; } = string.Empty;
     public string RefreshToken { get; set; } = string.Empty;
     public DateTime? RefreshTokenExpiryTime { get; set; } 
+
+
+    public ICollection<Watchlist> Watchlist { get; set; } = new List<Watchlist>();
 }
