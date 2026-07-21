@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import universeBackground from '../assets/Universe_Background.jpg';
-import {useAuth} from '../Context/AuthContext';
-import {Link, useNavigate} from 'react-router-dom';
+import { useAuth } from '../Context/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
@@ -14,21 +14,18 @@ export default function LoginPage() {
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError('');
-        
-        if(username.trim() === '')
-        {
+
+        if (username.trim() === '') {
             setError('Proszę podać nazwę użytkownika.');
             return;
         }
 
-        if(password.trim() === '')
-        {
+        if (password.trim() === '') {
             setError('Proszę podać hasło.');
             return;
         }
 
-        if(password.length < 6)
-        {
+        if (password.length < 6) {
             setError('Hasło musi zawierać co najmniej 6 znaków.');
             return;
         }
@@ -40,11 +37,11 @@ export default function LoginPage() {
         } catch (error) {
             console.error(error);
             setError('Nieprawidłowa nazwa użytkownika lub hasło.');
-        }finally {
+        } finally {
             setIsLogging(false);
         }
-        
-        
+
+
     };
 
     return (
