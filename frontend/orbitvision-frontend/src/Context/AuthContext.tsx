@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { axiosLogin, axiosGetMultiple } from '../api/axios';
 
+const USER_STORAGE_KEY = 'orbitvision_user';
+const SATELLITES_STORAGE_KEY = 'orbitvision_satellites';
+
 export interface User {
     username: string;
     email: string;
@@ -30,26 +33,54 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+// Helper function to read from localStorage 
+function readLocalStorage<T>(key: string, fallbackValue:T): T {
+    try{
+        const storedValue = localStorage.getItem(key);
+
+        if(storedValue === null) {
+            return fallbackValue;
+        }
+
+        return JSON.parse(storedValue) as T;
+    }catch (error) {
+        console.error(`Error reading from localStorage for key "${key}":`, error);
+        localStorage.removeItem(key);
+        return fallbackValue;
+    }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [satellites, setSatellites] = useState<Satellite[]>([]);
+    const [user, setUser] = useState<User | null>(() => readLocalStorage<User | null>(USER_STORAGE_KEY, null));
+
+    const [satellites, setSatellites] = useState<Satellite[]>(() => readLocalStorage<Satellite[]>(SATELLITES_STORAGE_KEY, []));
+
     const [isLoadingSatellites, setIsLoadingSatellites] = useState<boolean>(false);
 
     const login = async (username: string, password: string) => {
         const response = await axiosLogin(username, password);
-        setUser(response.userData);
+        const loggedUser = response.userData;
+
+        setUser(loggedUser);
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(loggedUser));
     };
 
     const logout = async () => {
-        // Implementation for logout
+        setUser(null);
+        setSatellites([]);
+
+        localStorage.removeItem(USER_STORAGE_KEY);
+        localStorage.removeItem(SATELLITES_STORAGE_KEY);
     };
 
     const loadSatellites = async () => {
         setIsLoadingSatellites(true);
         try{
             const response = await axiosGetMultiple();
+            const loadedSatellites = response.data.satellites;
 
-            setSatellites(response.data.satellites);
+            setSatellites(loadedSatellites);
+            localStorage.setItem(SATELLITES_STORAGE_KEY, JSON.stringify(loadedSatellites));
         } catch (error) {
             console.error('Error loading satellites:', error);
             throw error;
