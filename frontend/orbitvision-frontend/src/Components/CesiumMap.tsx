@@ -1,13 +1,29 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as Cesium from "cesium";
 import SearchBar from "./SearchBar";
 import { AddSatelliteFromTrajectory } from "../Utils/AddSatellite";
 import {useAuth} from "../Context/AuthContext";
+import LocationPanel from "./LocationPanel";
+import { useLocationContext } from "../Context/LocationContext";
+
+const HOME_ICON = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="30" fill="#2563eb" stroke="white" stroke-width="3"/>
+        <path
+            d="M16 31L32 17L48 31V49H37V37H27V49H16V31Z"
+            fill="white"
+            stroke="white"
+            stroke-linejoin="round"
+        />
+    </svg>
+`)}`;
 
 export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Cesium.Viewer | null>(null);
-    const {user, satellites, loadSatellites, isLoadingSatellites} = useAuth();
+    const [isViewerReady, setIsViewerReady] = useState(false);
+    const { user, satellites, loadSatellites, isLoadingSatellites} = useAuth();
+    const { location } = useLocationContext();
 
     // Wyszukiwanie satelity
     const handleSearchSatellite = async () => {
@@ -23,19 +39,59 @@ export default function CesiumMap() {
     };
 
     useEffect(() => {
-        const viewer = viewerRef.current;
+    const viewer = viewerRef.current;
 
-        if (!viewer) {
-            return;
-        }
+    if (!viewer || !isViewerReady) {
+        return;
+    }
 
-        viewer.entities.removeAll();
+    viewer.entities.removeAll();
 
-        satellites.forEach((satellite) => {
-            AddSatelliteFromTrajectory(viewer, satellite.points, satellite.satelliteName);
+    satellites.forEach((satellite) => {
+        AddSatelliteFromTrajectory(
+            viewer,
+            satellite.points,
+            satellite.satelliteName
+        );
+    });
+
+    if (location) {
+        viewer.entities.add({
+            id: "user-location",
+            name: location.label,
+            position: Cesium.Cartesian3.fromDegrees(
+                location.longitude,
+                location.latitude,
+                Math.max(location.altitudeMeters, 20)
+            ),
+            billboard: {
+                image: HOME_ICON,
+                width: 48,
+                height: 48,
+                verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                disableDepthTestDistance: Number.POSITIVE_INFINITY
+            },
+            label: {
+                text: location.label,
+                font: "14px sans-serif",
+                fillColor: Cesium.Color.WHITE,
+                outlineColor: Cesium.Color.BLACK,
+                outlineWidth: 3,
+                style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                pixelOffset: new Cesium.Cartesian2(0, 12),
+                verticalOrigin: Cesium.VerticalOrigin.TOP,
+                disableDepthTestDistance: Number.POSITIVE_INFINITY,
+                distanceDisplayCondition:
+                    new Cesium.DistanceDisplayCondition(
+                        0,
+                        5_000_000
+                    )
+            }
         });
+    }
 
-    }, [satellites]);
+    viewer.scene.requestRender();
+    }, [satellites, location, isViewerReady]);
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -101,9 +157,12 @@ export default function CesiumMap() {
 
         viewerRef.current = viewer;
 
+        setIsViewerReady(true);
+
         handleSearchSatellite();
 
         return () => {
+            setIsViewerReady(false);
             if (!viewer.isDestroyed()) {
                 viewer.destroy();
             }
@@ -118,18 +177,13 @@ export default function CesiumMap() {
                 <SearchBar onSearch={handleSearchSatellite} satellites={satellites} />
             </div>
 
-            {user && (
-                <p className="absolute top-4 left-4 z-20 rounded bg-slate-900 px-3 py-2 text-white">
-                    Zalogowano jako: {user.username}
-                </p>
-            )}
-
             {isLoadingSatellites && (
                 <p className="absolute top-4 right-4 z-20 rounded bg-slate-900 px-3 py-2 text-white">
                     Ładowanie satelitów...
                 </p>
             )}
 
+            <LocationPanel />
             <div ref={containerRef} className="w-full h-full" />
         </div>
     )
