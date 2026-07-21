@@ -27,6 +27,7 @@ public class SatelliteService : ISatelliteService
         _satelliteRefreshService = satelliteRefreshService;
     }
 
+
     private async Task CheckForRefresh()
     {
         var expDate = await _dbContext.Satellites.Select(s => s.ExpDate).FirstOrDefaultAsync();
@@ -35,14 +36,13 @@ public class SatelliteService : ISatelliteService
             await _satelliteRefreshService.RefreshSatelliteDataAsync();
         }
     }
-
     public async Task<List<AllSatelliteDataResponse>?> GetAllSattellitesDataAsync()
     {
         await CheckForRefresh();
         try
         {
             //var data = _dbContext.Satellites.Select(s => s.Name).ToList();
-            var data = _dbContext.Satellites.Select(s => new AllSatelliteDataResponse(s.Name, s.Line1, s.Line2, s.ExpDate)).ToList();
+            var data = _dbContext.Satellites.Select(s => new AllSatelliteDataResponse(s.Id ,s.Name, s.Line1, s.Line2, s.ExpDate)).ToList();
             return data;
         }
         catch (Exception)
