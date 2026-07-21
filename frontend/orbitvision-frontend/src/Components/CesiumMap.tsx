@@ -22,21 +22,10 @@ export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Cesium.Viewer | null>(null);
     const [isViewerReady, setIsViewerReady] = useState(false);
-    const { satellites, loadSatellites, isLoadingSatellites} = useAuth();
+    const { satellites, isLoadingSatellites} = useAuth();
     const { location } = useLocationContext();
 
     // Wyszukiwanie satelity
-    const handleSearchSatellite = async () => {
-        if (!viewerRef.current) return;
-
-        try {
-            // pobieranie danych o satelicie
-            await loadSatellites();
-
-        } catch (error) {
-            console.error("Error:", error);
-        }
-    };
 
     useEffect(() => {
     const viewer = viewerRef.current;
@@ -159,8 +148,6 @@ export default function CesiumMap() {
 
         setIsViewerReady(true);
 
-        handleSearchSatellite();
-
         return () => {
             setIsViewerReady(false);
             if (!viewer.isDestroyed()) {
@@ -174,7 +161,7 @@ export default function CesiumMap() {
     return (
         <div className="relative w-full h-full">
             <div className="absolute top-4 left-0 w-full z-10">
-                <SearchBar onSearch={handleSearchSatellite} satellites={satellites} />
+                <SearchBar />
             </div>
 
             {isLoadingSatellites && (

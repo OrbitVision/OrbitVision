@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import { axiosLogin, axiosGetMultiple } from '../api/axios';
+import { axiosLogin, axiosGetWatchlist, axiosAddToWatchlist, axiosDeleteFromWatchlist } from '../api/axios';
+import { calculateOrbits } from '../Domain/calculateOrbits';
 
 const USER_STORAGE_KEY = 'orbitvision_user';
 const SATELLITES_STORAGE_KEY = 'orbitvision_satellites';
@@ -17,6 +18,7 @@ export interface SatellitePoint {
 }
 
 export interface Satellite {
+    id: number;
     satelliteName: string;
     points: SatellitePoint[];
 }
@@ -28,7 +30,7 @@ interface AuthContextValue {
 
     login: (username: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
-    loadSatellites: () => Promise<void>;
+    syncWatchlist: (selectedSatelliteIds: number[]) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -73,27 +75,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem(SATELLITES_STORAGE_KEY);
     };
 
-    const loadSatellites = async () => {
+    const syncWatchlist = async (selectedSatelliteIds: number[]) => {
         setIsLoadingSatellites(true);
-        try{
-            const response = await axiosGetMultiple();
-            const loadedSatellites = response.data.satellites;
 
-            setSatellites(loadedSatellites);
-            localStorage.setItem(SATELLITES_STORAGE_KEY, JSON.stringify(loadedSatellites));
-        } catch (error) {
-            console.error('Error loading satellites:', error);
+        try {
+            const currentWatchlist = await axiosGetWatchlist();
+
+            const currentIds = currentWatchlist.map((satellite) => satellite.id);
+
+            const idsToAdd = selectedSatelliteIds.filter((id) => !currentIds.includes(id));
+            const idsToDelete = currentIds.filter((id) => !selectedSatelliteIds.includes(id));
+
+            await Promise.all([
+                ...idsToAdd.map((id) =>
+                axiosAddToWatchlist(id)),
+                ...idsToDelete.map((id) =>
+                axiosDeleteFromWatchlist(id))
+            ]);
+
+            const updatedWatchList = await axiosGetWatchlist();
+
+            const calculatedSatellites = calculateOrbits({satellites: updatedWatchList}).satellites;
+
+            setSatellites(calculatedSatellites);
+
+            localStorage.setItem(SATELLITES_STORAGE_KEY, JSON.stringify(calculatedSatellites));
+        }catch (error)
+        {
+            console.error("Error synchronizing watchlist: ", error);
             throw error;
-        } finally {
+        }finally
+        {
             setIsLoadingSatellites(false);
         }
-    };
+    }
 
     return (
-        <AuthContext.Provider value={{ user, satellites, isLoadingSatellites, login, logout, loadSatellites }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    <AuthContext.Provider value={{user,satellites,isLoadingSatellites,login,logout,syncWatchlist}}>
+        {children}
+    </AuthContext.Provider>
+);
 }
 
 export function useAuth() {
