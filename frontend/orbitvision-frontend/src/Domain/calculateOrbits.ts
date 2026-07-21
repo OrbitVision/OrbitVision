@@ -1,4 +1,11 @@
-import * as satellite from 'satellite.js';
+import * as satellite from "satellite.js";
+
+interface SatelliteData {
+    id: number;
+    satelliteName: string;
+    tle1: string;
+    tle2: string;
+}
 
 interface SatellitePoint {
     latitude: number;
@@ -7,19 +14,24 @@ interface SatellitePoint {
     timestamp: string;
 }
 
-interface SatelliteRouteResponse {
+export interface SatelliteRouteResponse {
+    id: number;
     satelliteName: string;
     points: SatellitePoint[];
+}
+
+interface MultipleSatelliteDataResponse {
+    satellites: SatelliteData[];
 }
 
 interface MultipleSatellitesResponse {
     satellites: SatelliteRouteResponse[];
 }
 
-export function calculateOrbits(data: any): MultipleSatellitesResponse {
+export function calculateOrbits(data: MultipleSatelliteDataResponse): MultipleSatellitesResponse {
     const results: SatelliteRouteResponse[] = [];
 
-    data.satellites.forEach((sat: any) => {
+    data.satellites.forEach((sat) => {
         const satrec = satellite.twoline2satrec(sat.tle1, sat.tle2);
 
         const periodMinutes = (2 * Math.PI) / satrec.no;
@@ -50,6 +62,7 @@ export function calculateOrbits(data: any): MultipleSatellitesResponse {
         }
 
         results.push({
+            id: sat.id,
             satelliteName: sat.satelliteName,
             points: pointsList
         });
