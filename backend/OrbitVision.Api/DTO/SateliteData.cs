@@ -23,6 +23,7 @@ public record SatelliteDataResponse(
 );
 
 public record AllSatelliteDataResponse(
+    int Id,
     string SatelliteName, 
     string tle1,
     string tle2,
