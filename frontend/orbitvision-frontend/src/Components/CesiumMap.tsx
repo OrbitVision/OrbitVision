@@ -22,7 +22,7 @@ export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Cesium.Viewer | null>(null);
     const [isViewerReady, setIsViewerReady] = useState(false);
-    const { user, satellites, loadSatellites, isLoadingSatellites} = useAuth();
+    const { satellites, loadSatellites, isLoadingSatellites} = useAuth();
     const { location } = useLocationContext();
 
     // Wyszukiwanie satelity
