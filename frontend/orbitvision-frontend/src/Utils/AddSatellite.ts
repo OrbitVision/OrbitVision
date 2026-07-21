@@ -137,8 +137,6 @@ export function AddSatelliteFromTrajectory(
         outlineColor: Cesium.Color.CYAN
       }
     });
-
-    console.log(coverageCircle);
     
     viewer.clock.startTime = startTime.clone();
     viewer.clock.stopTime = stopTime.clone();
