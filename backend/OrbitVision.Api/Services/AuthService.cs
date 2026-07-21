@@ -5,7 +5,7 @@ using OrbitVision.API.Models;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-
+using BCrypt.Net;
 
 namespace OrbitVision.API.Services;
 
@@ -22,8 +22,8 @@ public class AuthService
 
     public async Task<(UserDataResponse, string accessToken, string refreshToken)?> LoginAsync(string username, string password)
     {
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == username && u.Password == password);
-        if (user == null)
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
+        if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
         {
             return null;
         }
@@ -46,11 +46,12 @@ public class AuthService
             return false;
         }
 
+        string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
         var newUser = new User
         {
             Username = username,
             Email = email,
-            Password = password
+            Password = hashedPassword
         };
 
         _dbContext.Users.Add(newUser);
