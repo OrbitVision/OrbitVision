@@ -38,7 +38,7 @@ public class SatelliteService : ISatelliteService
     }
 public async Task<List<AllSatelliteDataResponse>?> GetAllSattellitesDataAsync()
 {
-    await CheckForRefresh();
+    //await CheckForRefresh();
     
     var data = await _dbContext.Satellites
         .Select(s => new AllSatelliteDataResponse(s.Id, s.Name, s.Line1, s.Line2, s.ExpDate))

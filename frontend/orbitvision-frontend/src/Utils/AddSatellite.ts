@@ -81,9 +81,9 @@ export function AddSatelliteFromTrajectory(
   });
   // Okrąg pokazujący obszar Ziemi, z którego satelita jest widoczna
   // const coverageCircle = viewer.entities.add({
-  //     name: `${nazwa} - obszar widoczności`,
-  //     // Pozycja środka okręgu: punkt na powierzchni Ziemi pod satelitą
-  //     position: new Cesium.CallbackPositionProperty((time) => {
+  //   name: `${nazwa} - obszar widoczności`,
+  //   // Pozycja środka okręgu: punkt na powierzchni Ziemi pod satelitą
+  //   position: new Cesium.CallbackPositionProperty((time) => {
   //     const satellitePosition = positionProperty.getValue(time);
 
   //     if (!satellitePosition) {

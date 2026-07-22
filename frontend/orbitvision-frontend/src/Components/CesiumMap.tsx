@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as Cesium from "cesium";
 import SearchBar from "./SearchBar";
 import { AddSatelliteFromTrajectory } from "../Utils/AddSatellite";
-import {useAuth} from "../Context/AuthContext";
+import { useAuth } from "../Context/AuthContext";
 import LocationPanel from "./LocationPanel";
 import { useLocationContext } from "../Context/LocationContext";
 
@@ -22,64 +22,65 @@ export default function CesiumMap() {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<Cesium.Viewer | null>(null);
     const [isViewerReady, setIsViewerReady] = useState(false);
-    const { satellites, isLoadingSatellites} = useAuth();
+    const { satellites, isLoadingSatellites } = useAuth();
     const { location } = useLocationContext();
 
     // Wyszukiwanie satelity
 
     useEffect(() => {
-    const viewer = viewerRef.current;
+        const viewer = viewerRef.current;
 
-    if (!viewer || !isViewerReady) {
-        return;
-    }
+        if (!viewer || !isViewerReady) {
+            return;
+        }
 
-    viewer.entities.removeAll();
+        viewer.entities.removeAll();
 
-    satellites.forEach((satellite) => {
-        AddSatelliteFromTrajectory(
-            viewer,
-            satellite.points,
-            satellite.satelliteName
-        );
-    });
-
-    if (location) {
-        viewer.entities.add({
-            id: "user-location",
-            name: location.label,
-            position: Cesium.Cartesian3.fromDegrees(
-                location.longitude,
-                location.latitude,
-                Math.max(location.altitudeMeters, 20)
-            ),
-            billboard: {
-                image: HOME_ICON,
-                width: 48,
-                height: 48,
-                verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                disableDepthTestDistance: Number.POSITIVE_INFINITY
-            },
-            label: {
-                text: location.label,
-                font: "14px sans-serif",
-                fillColor: Cesium.Color.WHITE,
-                outlineColor: Cesium.Color.BLACK,
-                outlineWidth: 3,
-                style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-                pixelOffset: new Cesium.Cartesian2(0, 12),
-                verticalOrigin: Cesium.VerticalOrigin.TOP,
-                disableDepthTestDistance: Number.POSITIVE_INFINITY,
-                distanceDisplayCondition:
-                    new Cesium.DistanceDisplayCondition(
-                        0,
-                        5_000_000
-                    )
-            }
+        satellites.forEach((satellite) => {
+            console.log("TSTSTS")
+            AddSatelliteFromTrajectory(
+                viewer,
+                satellite.points,
+                satellite.satelliteName
+            );
         });
-    }
 
-    viewer.scene.requestRender();
+        if (location) {
+            viewer.entities.add({
+                id: "user-location",
+                name: location.label,
+                position: Cesium.Cartesian3.fromDegrees(
+                    location.longitude,
+                    location.latitude,
+                    Math.max(location.altitudeMeters, 20)
+                ),
+                billboard: {
+                    image: HOME_ICON,
+                    width: 48,
+                    height: 48,
+                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                    disableDepthTestDistance: Number.POSITIVE_INFINITY
+                },
+                label: {
+                    text: location.label,
+                    font: "14px sans-serif",
+                    fillColor: Cesium.Color.WHITE,
+                    outlineColor: Cesium.Color.BLACK,
+                    outlineWidth: 3,
+                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                    pixelOffset: new Cesium.Cartesian2(0, 12),
+                    verticalOrigin: Cesium.VerticalOrigin.TOP,
+                    disableDepthTestDistance: Number.POSITIVE_INFINITY,
+                    distanceDisplayCondition:
+                        new Cesium.DistanceDisplayCondition(
+                            0,
+                            5_000_000
+                        )
+                }
+            });
+        }
+
+        viewer.scene.requestRender();
     }, [satellites, location, isViewerReady]);
 
     useEffect(() => {

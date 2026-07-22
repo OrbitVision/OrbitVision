@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { axiosGetNames , axiosGetWatchlist, type SatelliteData} from "../api/axios";
-import {useAuth} from "../Context/AuthContext";
+import { axiosGetNames, axiosGetWatchlist, type SatelliteData } from "../api/axios";
+import { useAuth } from "../Context/AuthContext";
 
 
 export default function SearchBar() {
@@ -20,8 +20,7 @@ export default function SearchBar() {
 
   const handleSatelliteSelection = (sateliteId: number, checked: boolean) => {
     setSelectedSatelliteIds((currentIds) => {
-      if(checked)
-      {
+      if (checked) {
         return currentIds.includes(sateliteId) ? currentIds : [...currentIds, sateliteId];
       }
 
@@ -29,13 +28,12 @@ export default function SearchBar() {
     });
   };
 
-  const handleDisplaySatellites = async() => {
+  const handleDisplaySatellites = async () => {
     setError("");
 
     try {
       await syncWatchlist(selectedSatelliteIds);
-    }catch
-    {
+    } catch {
       setError("Nie udało się zaktualizować watchlisty!");
     }
   }
@@ -45,17 +43,16 @@ export default function SearchBar() {
       setIsLoadingList(true);
       setError("");
 
-      try{
+      try {
         const [allSatellites, watchListSatellites] = await Promise.all([axiosGetNames(), axiosGetWatchlist()]);
 
         setAvailableSatellites(allSatellites);
 
         setSelectedSatelliteIds(watchListSatellites.map((satellite) => satellite.id));
-      }catch(error)
-      {
+      } catch (error) {
         console.error("Error loading satellites: ", error);
         setError("Nie udało się pobrać satelitów.");
-      }finally{
+      } finally {
         setIsLoadingList(false);
       }
     }
@@ -126,16 +123,16 @@ export default function SearchBar() {
 
                 <input type="checkbox"
                   checked={selectedSatelliteIds.includes(
-                      satellite.id
+                    satellite.id
                   )}
                   onChange={(event) =>
-                      handleSatelliteSelection(
-                          satellite.id,
-                          event.target.checked
-                      )
+                    handleSatelliteSelection(
+                      satellite.id,
+                      event.target.checked
+                    )
                   }
                   disabled={
-                      isLoadingList || isLoadingSatellites
+                    isLoadingList || isLoadingSatellites
                   }
                   aria-label={`Wybierz satelitę ${satellite.satelliteName}`}
                   className="m-3 h-6 w-6 cursor-pointer accent-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
@@ -150,7 +147,7 @@ export default function SearchBar() {
 
         <div className="shrink-0 bg-gray-900 p-3">
           <button type="button" onClick={handleDisplaySatellites} disabled={isLoadingList || isLoadingSatellites} className="w-full rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-500 disabled:opacity-60">
-          {isLoadingSatellites ? "Aktualizowanie..." : `Wyświetl (${selectedSatelliteIds.length})`}
+            {isLoadingSatellites ? "Aktualizowanie..." : `Wyświetl (${selectedSatelliteIds.length})`}
           </button>
         </div>
 
