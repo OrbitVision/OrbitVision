@@ -1,65 +1,78 @@
 import { useEffect, useState } from "react";
-import { axiosGetNames } from "../api/axios";
+import { axiosGetNames , axiosGetWatchlist, type SatelliteData} from "../api/axios";
+import {useAuth} from "../Context/AuthContext";
 
-interface Satellite {
-  satelliteName: string;
-}
 
-interface SearchBarProps {
-  onSearch: (satelliteName: string) => void;
-  satellites: Satellite[];
-}
-
-//tempfix for new satelliteNames responses
-interface Sattellites {
-  satelliteName: string,
-  tle1: string,
-  tle2: string,
-  expDate: string
-}
-
-export default function SearchBar({
-  onSearch
-}: SearchBarProps) {
+export default function SearchBar() {
+  const { syncWatchlist, isLoadingSatellites } = useAuth();
   const [searchInput, setSearchInput] = useState("");
-  const [sattelliteNames, setSatellitesNames] = useState<string[]>([]);
+  const [availableSatellites, setAvailableSatellites] = useState<SatelliteData[]>([]);
+  const [selectedSatelliteIds, setSelectedSatelliteIds] = useState<number[]>([]);
+  const [isLoadingList, setIsLoadingList] = useState(true);
+  const [error, setError] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
+  console.log(error);
 
-  const filteredSatellitesNames = sattelliteNames.filter((satellite) =>
-    typeof satellite === "string" &&
-    satellite.toLowerCase().includes((searchInput || "").trim().toLowerCase())
+  const filteredSatellites = availableSatellites.filter(
+    (satellite) => satellite.satelliteName.toLowerCase().includes(searchInput.trim().toLowerCase())
   );
-  const handle = (e: React.FormEvent) => {
-    e.preventDefault();
 
-    if (searchInput.trim() !== "") {
-      onSearch(searchInput);
-    }
+  const handleSatelliteSelection = (sateliteId: number, checked: boolean) => {
+    setSelectedSatelliteIds((currentIds) => {
+      if(checked)
+      {
+        return currentIds.includes(sateliteId) ? currentIds : [...currentIds, sateliteId];
+      }
+
+      return currentIds.filter((id) => id !== sateliteId);
+    });
   };
 
-  useEffect(() => {
-    async function getData() {
-      const names = await axiosGetNames();
-      //satelity maja name, tle1, tle2, expDate
-      const extractedNames = names.data.map((item: Sattellites) => item.satelliteName);
-      setSatellitesNames(extractedNames);
-      //setSatellitesNames(names.data);
-    };
+  const handleDisplaySatellites = async() => {
+    setError("");
 
-    getData();
+    try {
+      await syncWatchlist(selectedSatelliteIds);
+    }catch
+    {
+      setError("Nie udało się zaktualizować watchlisty!");
+    }
+  }
+
+  useEffect(() => {
+    async function loadData() {
+      setIsLoadingList(true);
+      setError("");
+
+      try{
+        const [allSatellites, watchListSatellites] = await Promise.all([axiosGetNames(), axiosGetWatchlist()]);
+
+        setAvailableSatellites(allSatellites);
+
+        setSelectedSatelliteIds(watchListSatellites.map((satellite) => satellite.id));
+      }catch(error)
+      {
+        console.error("Error loading satellites: ", error);
+        setError("Nie udało się pobrać satelitów.");
+      }finally{
+        setIsLoadingList(false);
+      }
+    }
+
+    loadData();
   }, []);
 
   useEffect(() => {
-    if (sattelliteNames != null) {
-      console.log("Satelity: ", sattelliteNames)
+    if (availableSatellites != null) {
+      console.log("Satelity: ", availableSatellites)
     }
-  }, [sattelliteNames]);
+  }, [availableSatellites]);
   return (
     <>
       {/* Wyszukiwarka */}
       <form
-        onSubmit={handle}
+        onSubmit={(event) => event.preventDefault()}
         className="absolute top-5 left-1/2 z-20 flex w-[95%] max-w-xl -translate-x-1/2 items-center gap-3"
       >
         <input
@@ -100,20 +113,32 @@ export default function SearchBar({
         lg:block
       `}
       >
-        {filteredSatellitesNames.length > 0 ? (
+        {filteredSatellites.length > 0 ? (
           <div className="max-h-[calc(60vh-4.75rem)] overflow-y-auto overflow-x-hidden">
-            {filteredSatellitesNames.map((satellite, index) => (
+            {filteredSatellites.map((satellite) => (
               <div
-                key={index}
+                key={satellite.id}
                 className="flex items-center justify-between border-b border-white/20 text-white transition-colors hover:bg-white/10 last:border-b-0"
               >
                 <span className="px-4 py-2">
-                  {satellite}
+                  {satellite.satelliteName}
                 </span>
 
-                <input
-                  type="checkbox"
-                  className="m-3 h-6 w-6 cursor-pointer accent-blue-500"
+                <input type="checkbox"
+                  checked={selectedSatelliteIds.includes(
+                      satellite.id
+                  )}
+                  onChange={(event) =>
+                      handleSatelliteSelection(
+                          satellite.id,
+                          event.target.checked
+                      )
+                  }
+                  disabled={
+                      isLoadingList || isLoadingSatellites
+                  }
+                  aria-label={`Wybierz satelitę ${satellite.satelliteName}`}
+                  className="m-3 h-6 w-6 cursor-pointer accent-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
             ))}
@@ -124,8 +149,8 @@ export default function SearchBar({
         )}
 
         <div className="shrink-0 bg-gray-900 p-3">
-          <button type="button" className="w-full rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
-            Wyświetl
+          <button type="button" onClick={handleDisplaySatellites} disabled={isLoadingList || isLoadingSatellites} className="w-full rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-500 disabled:opacity-60">
+          {isLoadingSatellites ? "Aktualizowanie..." : `Wyświetl (${selectedSatelliteIds.length})`}
           </button>
         </div>
 

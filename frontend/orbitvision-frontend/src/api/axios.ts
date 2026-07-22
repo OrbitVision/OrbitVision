@@ -15,6 +15,14 @@ export interface RegisterResponse {
     username: string;
 }
 
+export interface SatelliteData {
+    id: number;
+    satelliteName: string;
+    tle1: string;
+    tle2: string;
+    expDate: string;
+}
+
 export const axiosGetData = async () => {
     try {
         var data = await axiosInstance.get("/api/SattelliteControler")
@@ -42,9 +50,9 @@ export const axiosGetMultiple = async () => {
 
 export const axiosGetNames = async () => {
     try {
-        var data = await axiosInstance.get("/api/SattelliteControler/allSattellitesData")
-        console.log(data);
-        return data;
+        var response = await axiosInstance.get("/api/SattelliteControler/allSattellitesData")
+        console.log(response);
+        return response.data;
     } catch (error) {
         console.error(error);
         throw error;
@@ -70,3 +78,31 @@ export const axiosRegister = async (username: string, email: string, password: s
         throw error;
     }
 }
+
+export const axiosGetWatchlist = async () => {
+    const response = await axiosInstance.get<SatelliteData[]>(
+        "/api/Watchlist"
+    );
+
+    return response.data;
+};
+
+export const axiosAddToWatchlist = async (
+    satelliteId: number
+) => {
+    const response = await axiosInstance.post(
+        `/api/Watchlist/${satelliteId}`
+    );
+
+    return response.data;
+};
+
+export const axiosDeleteFromWatchlist = async (
+    satelliteId: number
+) => {
+    const response = await axiosInstance.delete(
+        `/api/Watchlist/${satelliteId}`
+    );
+
+    return response.data;
+};
