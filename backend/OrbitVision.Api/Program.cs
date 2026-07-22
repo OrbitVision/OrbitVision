@@ -31,9 +31,9 @@ builder.Services.AddHttpClient<SattelliteControler>(client =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(builder =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        builder.WithOrigins("http://localhost:5173", "https://orbitvision.vercel.app")
+        policy.WithOrigins("http://localhost:5173", "https://orbitvision.vercel.app")
                .AllowAnyMethod()
                .AllowAnyHeader()
                .AllowCredentials();
@@ -77,7 +77,7 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-app.UseCors();
+app.UseCors("AllowFrontend");
 
 //if (app.Environment.IsDevelopment())
 //{
