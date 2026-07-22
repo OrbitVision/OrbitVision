@@ -36,20 +36,16 @@ public class SatelliteService : ISatelliteService
             await _satelliteRefreshService.RefreshSatelliteDataAsync();
         }
     }
-    public async Task<List<AllSatelliteDataResponse>?> GetAllSattellitesDataAsync()
-    {
-        await CheckForRefresh();
-        try
-        {
-            //var data = _dbContext.Satellites.Select(s => s.Name).ToList();
-            var data = _dbContext.Satellites.Select(s => new AllSatelliteDataResponse(s.Id ,s.Name, s.Line1, s.Line2, s.ExpDate)).ToList();
-            return data;
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-    }
+public async Task<List<AllSatelliteDataResponse>?> GetAllSattellitesDataAsync()
+{
+    await CheckForRefresh();
+    
+    var data = await _dbContext.Satellites
+        .Select(s => new AllSatelliteDataResponse(s.Id, s.Name, s.Line1, s.Line2, s.ExpDate))
+        .ToListAsync();
+        
+    return data;
+}
     public async Task<MultipleSatelliteDataResponse?> GetMultipleSatellitesAsync()
     {
         await CheckForRefresh();
